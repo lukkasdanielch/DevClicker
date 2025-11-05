@@ -6,18 +6,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.devclicker.ui.auth.login.LoginScreen
 import com.example.devclicker.ui.auth.signup.SignUpScreen
+import com.example.devclicker.ui.game.MainScreen // Importar a tela do jogo
 
 @Composable
-fun MainNavGraph(navController: NavHostController) {
+fun MainNavGraph(navController: NavHostController, startDestination: String) {
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = startDestination
     ) {
-        composable("login") {
+        composable("login_screen") {
             LoginScreen(navController)
         }
-        composable("signup") {
+        composable("signup_screen") {
             SignUpScreen(navController)
+        }
+        composable("game_screen") {
+            MainScreen()
         }
     }
 }

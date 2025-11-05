@@ -56,7 +56,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
                 Text("Entrar")
             }
 
-            TextButton(onClick = { navController.navigate("signup") }) {
+            TextButton(onClick = { navController.navigate("signup_screen") }) {
                 Text("Não tem conta? Cadastre-se")
             }
 
@@ -72,8 +72,8 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
                 }
                 is LoginState.Success -> {
                     LaunchedEffect(Unit) {
-                        navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
+                        navController.navigate("game_screen") {
+                            popUpTo("login_screen") { inclusive = true }
                         }
                     }
                 }

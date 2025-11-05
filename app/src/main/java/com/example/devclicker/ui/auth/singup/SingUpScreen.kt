@@ -61,8 +61,8 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                 is SignUpState.Loading -> CircularProgressIndicator()
                 is SignUpState.Success -> {
                     LaunchedEffect(Unit) {
-                        navController.navigate("login") {
-                            popUpTo("signup") { inclusive = true }
+                        navController.navigate("login_screen") {
+                            popUpTo("signup_screen") { inclusive = true }
                         }
                     }
                 }
