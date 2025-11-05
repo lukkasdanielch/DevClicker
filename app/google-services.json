@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "877009443089",
+    "project_id": "devclicker-91c2a",
+    "storage_bucket": "devclicker-91c2a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877009443089:android:f181c737317c6c992e14b0",
+        "android_client_info": {
+          "package_name": "com.example.devclicker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC96eaBZLsRUlE1k9srlHxjvDLa6I-ws6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
