@@ -1,7 +1,6 @@
 package com.example.devclicker.data.remote
 
 import com.example.devclicker.data.remote.dto.*
-import retrofit2.Response
 import retrofit2.http.*
 
 /**
@@ -14,33 +13,34 @@ interface ApiService {
     @POST("auth/login")
     suspend fun login(
         @Body request: LoginRequest
-    ): Response<LoginResponse>
+    ): LoginResponse // Removido Response<>
 
     // 🔹 CADASTRO
     @POST("auth/signup")
     suspend fun signUp(
         @Body request: SignUpRequest
-    ): Response<LoginResponse>
+    ): LoginResponse // Removido Response<>
 
     // 🔹 PROGRESSO DO USUÁRIO
     @GET("user/progress/{userId}")
     suspend fun getUserProgress(
         @Path("userId") userId: String
-    ): Response<UserProgress>
+    ): UserProgress // Removido Response<>
 
     // 🔹 LISTA DE UPGRADES DISPONÍVEIS
+    // FUNÇÃO CORRIGIDA: Renomeada para "getUpgrades" e removido o Response<>
     @GET("game/upgrades")
-    suspend fun getAvailableUpgrades(): Response<List<UpgradeInfo>>
+    suspend fun getUpgrades(): List<UpgradeInfo>
 
     // 🔹 COMPRA DE UPGRADE
     @POST("game/buy-upgrade")
     suspend fun buyUpgrade(
         @Body request: BuyUpgradeRequest
-    ): Response<BuyUpgradeResponse>
+    ): BuyUpgradeResponse // Removido Response<>
 
     // 🔹 RESETAR PROGRESSO DO USUÁRIO (opcional)
     @POST("user/reset")
     suspend fun resetProgress(
         @Body request: ResetProgressRequest
-    ): Response<GenericResponse>
+    ): GenericResponse // Removido Response<>
 }
