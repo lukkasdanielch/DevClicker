@@ -22,9 +22,9 @@ fun Appnavigation() {
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
 
             startDestination = if (firebaseAuth.currentUser != null) {
-                "game_screen"
-            } else {
                 "login_screen"
+            } else {
+                "game_screen"
             }
         }
 

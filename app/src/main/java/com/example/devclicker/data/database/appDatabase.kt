@@ -1,7 +1,5 @@
 package com.example.devclicker.data.database
 
-
-
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -9,13 +7,10 @@ import androidx.room.RoomDatabase
 import com.example.devclicker.data.dao.JogadorDao
 import com.example.devclicker.data.model.Jogador
 
-
-
 @Database(entities = [Jogador::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun jogadorDao(): JogadorDao
-
 
     companion object {
         @Volatile

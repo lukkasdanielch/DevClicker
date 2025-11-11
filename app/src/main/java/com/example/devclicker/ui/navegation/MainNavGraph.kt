@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.devclicker.ui.auth.login.LoginScreen
 import com.example.devclicker.ui.auth.signup.SignUpScreen
-import com.example.devclicker.ui.game.MainScreen
 
 @Composable
 fun MainNavGraph(navController: NavHostController, startDestination: String) {
@@ -21,7 +20,7 @@ fun MainNavGraph(navController: NavHostController, startDestination: String) {
             SignUpScreen(navController)
         }
         composable("game_screen") {
-            MainScreen()
+
         }
     }
 }
