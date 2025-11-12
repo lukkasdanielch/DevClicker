@@ -28,10 +28,5 @@ fun ClickerScreen(navController: NavHostController) {
 
         Text("Tela Principal (Clicker)")
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Voltar ao Menu")
-        }
     }
 }

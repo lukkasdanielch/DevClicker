@@ -33,10 +33,6 @@ fun SettingsScreen(navController: NavHostController, viewModel: SettingsViewMode
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Voltar ao Menu")
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(

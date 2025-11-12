@@ -30,8 +30,5 @@ fun UpgradesScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Voltar ao Menu")
-        }
     }
 }

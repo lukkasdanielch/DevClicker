@@ -10,12 +10,7 @@ import com.example.devclicker.ui.auth.login.LoginScreen
 import com.example.devclicker.ui.auth.login.LoginViewModel
 import com.example.devclicker.ui.auth.signup.SignUpScreen
 import com.example.devclicker.ui.auth.signup.SignUpViewModel
-import com.example.devclicker.ui.game.clicker.ClickerScreen
 import com.example.devclicker.ui.game.game.GameScreen
-import com.example.devclicker.ui.game.settings.SettingsScreen
-import com.example.devclicker.ui.game.settings.SettingsViewModel
-import com.example.devclicker.ui.game.upgrades.UpgradesScreen
-
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
@@ -36,23 +31,10 @@ fun MainNavGraph(
             SignUpScreen(navController, viewModel)
         }
 
-        // Rotas do Jogo
-
+        // --- MUDANÇA PRINCIPAL ---
+        // A rota "game_screen" agora carrega o contêiner
         composable("game_screen") {
-            GameScreen(navController = navController)
-        }
-
-        composable("clicker_screen") {
-            ClickerScreen(navController = navController)
-        }
-
-        composable("upgrades_screen") {
-            UpgradesScreen(navController = navController)
-        }
-
-        composable("settings_screen") {
-            val viewModel: SettingsViewModel = viewModel(factory = factory)
-            SettingsScreen(navController = navController, viewModel = viewModel)
+            GameScreen(mainNavController = navController, factory = factory)
         }
     }
 }
