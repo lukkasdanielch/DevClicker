@@ -13,28 +13,21 @@ import com.google.firebase.auth.FirebaseAuth
 fun Appnavigation() {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
-
-
     var startDestination by remember { mutableStateOf<String?>(null) }
-
 
     DisposableEffect(Unit) {
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-
             startDestination = if (firebaseAuth.currentUser != null) {
-                "login_screen"
-            } else {
                 "game_screen"
+            } else {
+                "login_screen"
             }
         }
-//a
         auth.addAuthStateListener(listener)
-
         onDispose {
             auth.removeAuthStateListener(listener)
         }
     }
-
 
     if (startDestination == null) {
         Box(
@@ -44,7 +37,7 @@ fun Appnavigation() {
             CircularProgressIndicator()
         }
     } else {
-
+        // Isso agora funciona corretamente
         MainNavGraph(navController = navController, startDestination = startDestination!!)
     }
 }
