@@ -21,22 +21,15 @@ interface JogadorDao {
     @Delete
     suspend fun delete(jogador: Jogador)
 
-    /**
-     * CORREÇÃO: A query agora usa "FROM jogadores" (o tableName)
-     * e não "FROM Jogador" (o nome da classe).
-     */
+
     @Query("SELECT * FROM jogadores WHERE id = :id")
     fun getJogadorById(id: Int): Flow<Jogador?>
 
-    /**
-     * CORREÇÃO: Query também atualizada para "FROM jogadores".
-     */
+
     @Query("SELECT * FROM jogadores WHERE nome = :nome LIMIT 1")
     suspend fun getJogadorByNome(nome: String): Jogador?
 
-    /**
-     * CORREÇÃO: Query também atualizada para "FROM jogadores".
-     */
+
     @Query("SELECT * FROM jogadores")
     fun getAllJogadores(): Flow<List<Jogador>>
 }

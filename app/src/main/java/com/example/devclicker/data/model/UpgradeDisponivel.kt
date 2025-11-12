@@ -2,7 +2,7 @@ package com.example.devclicker.ui.game.upgrades
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items // Import obrigatório para LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -11,16 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-// REMOVIDO: import com.example.devclicker.data.model.UpgradeApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun UpgradesScreen(viewModel: UpgradesViewModel = viewModel()) {
-    // UpgradesUiState e o modelo UpgradeDisponivel são acessíveis aqui.
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-
 
     LaunchedEffect(uiState.mensagemErro) {
         uiState.mensagemErro?.let { message ->
@@ -84,12 +81,10 @@ fun UpgradesScreen(viewModel: UpgradesViewModel = viewModel()) {
                                 Text("Todos os upgrades disponíveis foram comprados.", Modifier.padding(16.dp))
                             }
                         }
-                        // Usa UpgradeDisponivel do UiState
                         items(uiState.upgradesParaComprar, key = { it.id }) { upgrade ->
                             UpgradeItem(
                                 upgrade = upgrade,
                                 isAffordable = uiState.jogadorPontos >= upgrade.preco,
-                                // O ViewModel::buyUpgrade está preparado para aceitar UpgradeDisponivel
                                 onBuyClick = { viewModel.buyUpgrade(upgrade) }
                             )
                         }
@@ -102,7 +97,7 @@ fun UpgradesScreen(viewModel: UpgradesViewModel = viewModel()) {
 
 @Composable
 fun UpgradeItem(
-    upgrade: UpgradeDisponivel, // <--- Tipo alterado para o modelo local (UpgradeDisponivel)
+    upgrade: UpgradeDisponivel, // Usa o tipo local
     isAffordable: Boolean,
     onBuyClick: () -> Unit
 ) {
