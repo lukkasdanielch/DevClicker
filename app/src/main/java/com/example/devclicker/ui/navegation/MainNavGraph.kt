@@ -31,7 +31,6 @@ fun MainNavGraph(
             SignUpScreen(navController, viewModel)
         }
 
-        // --- MUDANÇA PRINCIPAL ---
         // A rota "game_screen" agora carrega o contêiner
         composable("game_screen") {
             GameScreen(mainNavController = navController, factory = factory)

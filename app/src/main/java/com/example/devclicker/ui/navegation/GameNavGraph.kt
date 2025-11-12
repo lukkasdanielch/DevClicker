@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.devclicker.MainActivity
 import com.example.devclicker.ui.game.clicker.ClickerScreen
+import com.example.devclicker.ui.game.clicker.ClickerViewModel
 import com.example.devclicker.ui.game.settings.SettingsScreen
 import com.example.devclicker.ui.game.settings.SettingsViewModel
 import com.example.devclicker.ui.game.upgrades.UpgradesScreen
@@ -18,22 +19,25 @@ fun GameNavGraph(
     mainNavController: NavHostController,
     factory: MainActivity.AppViewModelFactory
 ) {
+    val sharedViewModel: ClickerViewModel = viewModel(
+        factory = factory
+    )
     NavHost(
         navController = gameNavController,
-        startDestination = BottomNavItem.Clicker.route // Tela inicial é o Clicker
+        startDestination = BottomNavItem.Clicker.route
     ) {
-        // Rota para a tela de clique
         composable(BottomNavItem.Clicker.route) {
-            ClickerScreen(navController = mainNavController)
+            ClickerScreen(viewModel = sharedViewModel)
         }
-        // Rota para a tela de upgrades
         composable(BottomNavItem.Upgrades.route) {
-            UpgradesScreen(navController = mainNavController)
+            UpgradesScreen(viewModel = sharedViewModel)
         }
-        // Rota para a tela de configurações
         composable(BottomNavItem.Settings.route) {
-            val viewModel: SettingsViewModel = viewModel(factory = factory)
-            SettingsScreen(navController = mainNavController, viewModel = viewModel)
+            val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
+            SettingsScreen(
+                navController = mainNavController,
+                viewModel = settingsViewModel
+            )
         }
     }
 }

@@ -14,6 +14,7 @@ import com.example.devclicker.ui.auth.signup.SignUpViewModel
 import com.example.devclicker.ui.game.settings.SettingsViewModel
 import com.example.devclicker.ui.theme.DevClickerTheme
 import com.google.firebase.auth.FirebaseAuth
+import com.example.devclicker.ui.game.clicker.ClickerViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
             return when {
                 modelClass.isAssignableFrom(LoginViewModel::class.java) -> {
                     LoginViewModel(authRepository) as T
+                }
+                modelClass.isAssignableFrom(ClickerViewModel::class.java) -> {
+                    ClickerViewModel(gameRepository) as T
                 }
                 modelClass.isAssignableFrom(SignUpViewModel::class.java) -> {
                     SignUpViewModel(authRepository) as T
