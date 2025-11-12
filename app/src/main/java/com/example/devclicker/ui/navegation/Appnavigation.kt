@@ -27,7 +27,7 @@ fun Appnavigation() {
                 "game_screen"
             }
         }
-
+//a
         auth.addAuthStateListener(listener)
 
         onDispose {
