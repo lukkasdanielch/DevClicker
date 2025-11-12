@@ -9,10 +9,10 @@ import androidx.room.RoomDatabase
 import com.example.devclicker.data.dao.JogadorDao
 import com.example.devclicker.data.dao.UpgradeDao
 import com.example.devclicker.data.model.Jogador
+import com.example.devclicker.data.model.Upgrade
 
 
-
-@Database(entities = [Jogador::class], version = 1)
+@Database(entities = [Jogador::class, Upgrade::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     // Dentro da classe AppDatabase
     abstract fun upgradeDao(): UpgradeDao

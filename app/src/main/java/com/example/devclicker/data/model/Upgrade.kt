@@ -13,6 +13,7 @@ import androidx.room.PrimaryKey
         onDelete = ForeignKey.CASCADE
     )]
 )
+
 data class Upgrade(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
