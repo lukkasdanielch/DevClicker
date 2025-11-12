@@ -70,17 +70,18 @@ dependencies {
     // Room
     val room_version = "2.8.0"
     implementation("androidx.room:room-runtime:$room_version")
-    ksp("androidx.room:room-compiler:$room_version") // Correto!
+    ksp("androidx.room:room-compiler:$room_version")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-auth-ktx")
-
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")
-
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
 }

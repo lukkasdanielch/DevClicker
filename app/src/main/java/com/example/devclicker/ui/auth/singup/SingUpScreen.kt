@@ -12,12 +12,24 @@ import androidx.navigation.NavController
 import com.example.devclicker.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
+import kotlinx.coroutines.launch // 1. (Provável que esteja faltando) Importe o 'launch'
 
 @Composable
-fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = viewModel()) {
+fun SignUpScreen(
+    navController: NavController,
+    viewModel: SignUpViewModel = viewModel() // Hilt vai criar o ViewModel
+) {
     val signUpState by viewModel.signUpState.collectAsState()
+
+    // 2. ADICIONE A VARIÁVEL 'nome'
+    var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // (Para a Snackbar, que você não tinha, mas é necessária para o 'Error')
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -36,14 +48,23 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(text = "Criar Conta", style = MaterialTheme.typography.headlineMedium)
-
             Spacer(modifier = Modifier.height(20.dp))
+
+            // 3. ADICIONE O CAMPO DE TEXTO PARA O 'nome'
+            OutlinedTextField(
+                value = nome,
+                onValueChange = { nome = it },
+                label = { Text("Nome") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
+            )
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             )
 
             OutlinedTextField(
@@ -51,39 +72,58 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = view
                 onValueChange = { password = it },
                 label = { Text("Senha") },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { viewModel.signUp(email, password) },
-                modifier = Modifier.fillMaxWidth()
+                // 4. A CHAMADA AGORA FUNCIONA (pois 'nome' existe)
+                onClick = { viewModel.signUp(nome, email, password) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ) {
-                Text("Cadastrar")
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Cadastrar")
+                }
             }
 
-            TextButton(onClick = { navController.popBackStack() }) {
+            TextButton(onClick = { navController.popBackStack() }, enabled = !isLoading) {
                 Text("Já tem conta? Faça login")
             }
 
-            when (signUpState) {
-                is SignUpState.Loading -> CircularProgressIndicator()
-                is SignUpState.Success -> {
-                    LaunchedEffect(Unit) {
+            // 5. Lógica de estado corrigida para usar 'isLoading' e Snackbar
+            LaunchedEffect(signUpState) {
+                when (val state = signUpState) {
+                    is SignUpState.Loading -> {
+                        isLoading = true
+                    }
+                    is SignUpState.Success -> {
+                        isLoading = false
                         navController.navigate("login_screen") {
                             popUpTo("signup_screen") { inclusive = true }
                         }
                     }
+                    is SignUpState.Error -> {
+                        isLoading = false
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(state.message)
+                        }
+                    }
+                    is SignUpState.Idle -> {
+                        isLoading = false
+                    }
                 }
-                is SignUpState.Error -> {
-                    Text(
-                        text = (signUpState as SignUpState.Error).message,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                else -> {}
             }
         }
+
+        // 6. Adicione a SnackbarHost no final
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }

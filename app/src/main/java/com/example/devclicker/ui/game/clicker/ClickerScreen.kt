@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController // 1. IMPORTAR
 import com.example.devclicker.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,6 +37,8 @@ data class FloatingTextInfo(
 
 @Composable
 fun ClickerScreen(
+    // 2. (A CORREÇÃO) A tela agora aceita o NavController
+    navController: NavHostController,
     viewModel: ClickerViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -57,13 +60,20 @@ fun ClickerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), // Adiciona preenchimento geral
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center // <-- ADICIONADO PARA CENTRALIZAR TUDO
+        verticalArrangement = Arrangement.Center
     ) {
         // 1. Stats (Topo)
-        Text(String.format("DevPoints: %.1f", uiState.pontos), fontSize = 32.sp)
-        Text(String.format("Pontos p/ segundo: %.1f", uiState.pontosPorSegundo), fontSize = 16.sp)
+        Text(
+            // 3. Lendo os dados corretos do UiState
+            text = String.format("DevPoints: %.1f", uiState.pontos),
+            fontSize = 32.sp
+        )
+        Text(
+            text = String.format("Pontos p/ segundo: %.1f", uiState.pontosPorSegundo),
+            fontSize = 16.sp
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -73,8 +83,7 @@ fun ClickerScreen(
             modifier = Modifier
                 .size(150.dp)
                 .clickable {
-                    viewModel.onDevClicked()
-                    // Adiciona um novo texto flutuante na lista
+                    viewModel.onDevClicked() // 4. Chama o ViewModel
                     floatingTexts.add(FloatingTextInfo(text = "+${uiState.pontosPorClique}"))
                 }
         ) {
@@ -84,12 +93,10 @@ fun ClickerScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Renderiza cada texto flutuante na lista
             floatingTexts.forEach { textInfo ->
                 FloatingText(
                     textInfo = textInfo,
                     onAnimationEnd = {
-                        // Remove o texto da lista quando a animação acabar
                         floatingTexts.remove(textInfo)
                     }
                 )
@@ -98,11 +105,11 @@ fun ClickerScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 3. Console
+        // 3. Console (Este código já estava ótimo)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp) // Define altura fixa
+                .height(200.dp)
                 .background(Color.Black, RoundedCornerShape(8.dp))
                 .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                 .padding(8.dp)
@@ -113,8 +120,8 @@ fun ClickerScreen(
             ) {
                 items(uiState.consoleLines) { line ->
                     Text(
-                        text = "> $line", // Estilo de prompt
-                        color = Color(0xFF00C853), // Verde "hacker"
+                        text = "> $line",
+                        color = Color(0xFF00C853),
                         fontFamily = FontFamily.Monospace,
                         fontSize = 12.sp
                     )
@@ -124,49 +131,42 @@ fun ClickerScreen(
     }
 }
 
-// Composable separado para o texto flutuante e sua animação
+// O seu Composable 'FloatingText' (já estava ótimo)
 @Composable
 fun FloatingText(
     textInfo: FloatingTextInfo,
     onAnimationEnd: () -> Unit
 ) {
-    // Controladores de animação para offset (posição Y) e alpha (transparência)
-    val offsetY = remember { Animatable(-50f) } // Começa um pouco acima do centro
+    val offsetY = remember { Animatable(-50f) }
     val alpha = remember { Animatable(1f) }
 
-    // Dispara a animação quando o Composable aparece
     LaunchedEffect(key1 = textInfo.id) {
-        // Animação de subida
         launch {
             offsetY.animateTo(
-                targetValue = -150f, // Sobe 100 pixels
+                targetValue = -150f,
                 animationSpec = tween(durationMillis = 800)
             )
         }
-
-        // Animação de fade-out (desaparecer)
         launch {
-            delay(400) // Começa a desaparecer na metade do caminho
+            delay(400)
             alpha.animateTo(
                 targetValue = 0f,
                 animationSpec = tween(durationMillis = 400)
             )
         }
-
-        delay(800) // Duração total da animação
-        onAnimationEnd() // Avisa que a animação terminou
+        delay(800)
+        onAnimationEnd()
     }
 
     Text(
         text = textInfo.text,
         modifier = Modifier
-            .offset(y = offsetY.value.dp) // Aplica a animação de subida
-            .alpha(alpha.value),          // Aplica a animação de fade-out
-        color = Color.White, // Use a cor que preferir
+            .offset(y = offsetY.value.dp)
+            .alpha(alpha.value),
+        color = Color.White,
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
         style = MaterialTheme.typography.headlineMedium.copy(
-            // Adiciona uma "sombra" de texto para melhor legibilidade
             shadow = androidx.compose.ui.graphics.Shadow(
                 color = Color.Black,
                 blurRadius = 4f

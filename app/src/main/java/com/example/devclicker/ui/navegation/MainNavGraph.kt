@@ -1,21 +1,23 @@
 package com.example.devclicker.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+// 1. (A CORREÇÃO) Importe o 'hiltViewModel'
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.devclicker.MainActivity
+// 2. (A CORREÇÃO) Remova o import antigo
+// import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.devclicker.ui.auth.login.LoginScreen
 import com.example.devclicker.ui.auth.login.LoginViewModel
 import com.example.devclicker.ui.auth.signup.SignUpScreen
 import com.example.devclicker.ui.auth.signup.SignUpViewModel
 import com.example.devclicker.ui.game.game.GameScreen
+
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
-    startDestination: String,
-    factory: MainActivity.AppViewModelFactory
+    startDestination: String
 ) {
     NavHost(
         navController = navController,
@@ -23,17 +25,18 @@ fun MainNavGraph(
     ) {
         // Rotas de Autenticação
         composable("login_screen") {
-            val viewModel: LoginViewModel = viewModel(factory = factory)
+            // 3. (A CORREÇÃO) Use 'hiltViewModel()'
+            val viewModel: LoginViewModel = hiltViewModel()
             LoginScreen(navController, viewModel)
         }
         composable("signup_screen") {
-            val viewModel: SignUpViewModel = viewModel(factory = factory)
+            // 4. (A CORREÇÃO) Use 'hiltViewModel()'
+            val viewModel: SignUpViewModel = hiltViewModel()
             SignUpScreen(navController, viewModel)
         }
 
-        // A rota "game_screen" agora carrega o contêiner
         composable("game_screen") {
-            GameScreen(mainNavController = navController, factory = factory)
+            GameScreen(mainNavController = navController)
         }
     }
 }

@@ -2,110 +2,109 @@ package com.example.devclicker.ui.game.clicker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.devclicker.data.model.Jogador
 import com.example.devclicker.data.repository.GameRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ClickerViewModel(
-    private val gameRepository: GameRepository
+@HiltViewModel // 1. Habilitado para Hilt
+class ClickerViewModel @Inject constructor(
+    private val gameRepository: GameRepository // 2. Recebe o repositório
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ClickerUiState())
-    val uiState = _uiState.asStateFlow()
+    // --- Fontes de Dados Internas ---
 
-    // Estado do Multiplicador
-    private val _multiplier = MutableStateFlow(1) // 1x por padrão
-    val multiplier = _multiplier.asStateFlow()
+    // 3. Busca o ID do jogador (do repositório)
+    private val _jogadorId = flow { emit(gameRepository.getCurrentJogadorId()) }
+
+    // 4. Observa o Jogador (Flow) do banco de dados Room
+    private val _jogadorFlow: Flow<Jogador?> = _jogadorId.flatMapLatest { id ->
+        gameRepository.getJogadorById(id)
+    }
+
+    // 5. Estado local apenas para as linhas do console
+    private val _consoleLines = MutableStateFlow<List<String>>(emptyList())
 
     // Lista de fragmentos de código para o console
     private val codeSnippets = listOf(
-        "fun main() { ... }",
-        "System.out.println(\"Hello!\");",
-        "const [count, setCount] = useState(0);",
-        "@Composable",
-        "SELECT * FROM users;",
-        "import pandas as pd",
-        "git commit -m \"fix\"",
-        "if (user != null) { ... }",
-        "</div>",
-        "data class User(val id: Int, val name: String)",
-        "viewModelScope.launch { ... }",
-        "await fetchUserData();",
-        "x = 5; y = 10; z = x + y;"
+        "fun main() { ... }", "System.out.println(\"Hello!\");", "const [count, setCount] ...",
+        "@Composable", "SELECT * FROM users;", "import pandas as pd", "git commit -m \"fix\"",
+        "if (user != null) { ... }", "</div>", "data class User(...)", "viewModelScope.launch { ... }"
     )
 
+    // --- Estado Público (UiState) ---
+
+    // 6. Combina os dados do banco (Jogador) com os dados locais (Console)
+    val uiState: StateFlow<ClickerUiState> = combine(
+        _jogadorFlow,
+        _consoleLines
+    ) { jogador, consoleLines ->
+        ClickerUiState(
+            pontos = jogador?.pontos?.toDouble() ?: 0.0,
+            // TODO: A lógica de PPS e PPC deve vir dos upgrades comprados
+            pontosPorSegundo = 0.0,
+            pontosPorClique = 1L,
+            consoleLines = consoleLines
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ClickerUiState()
+    )
+
+    // --- Game Loop (Para Pontos Por Segundo) ---
     init {
         // Game Loop para Pontos por Segundo
         viewModelScope.launch {
             while (true) {
                 delay(100) // Roda 10x por segundo
-                val pontosGanhos = _uiState.value.pontosPorSegundo / 10.0
+                val pontosGanhos = uiState.value.pontosPorSegundo / 10.0
+
                 if (pontosGanhos > 0) {
-                    _uiState.update { currentState ->
-                        currentState.copy(pontos = currentState.pontos + pontosGanhos)
-                    }
+                    // Pega o jogador atual
+                    val jogador = _jogadorFlow.firstOrNull() ?: continue
+
+                    // Cria a cópia com novos pontos (convertendo Double para Long)
+                    val novoJogador = jogador.copy(
+                        pontos = (jogador.pontos + pontosGanhos).toLong()
+                    )
+
+                    // Salva no banco
+                    gameRepository.updateJogador(novoJogador)
                 }
             }
         }
     }
 
-    // Função para mudar o multiplicador
-    fun setMultiplier(value: Int) {
-        _multiplier.value = value
-    }
+    // --- Funções de Evento (Chamadas pela UI) ---
 
-    // Função chamada ao clicar
+    /**
+     * Chamado toda vez que o usuário clica no botão principal.
+     */
     fun onDevClicked() {
-        _uiState.update { currentState ->
-            val newPoints = currentState.pontos + currentState.pontosPorClique
+        viewModelScope.launch {
+            // 7. Pega o estado ATUAL do jogador (do flow)
+            val jogador = _jogadorFlow.firstOrNull() ?: return@launch
+            val pontosGanhos = uiState.value.pontosPorClique
 
-            // Pega um fragmento aleatório
-            val snippet = codeSnippets.random()
-
-            // Adiciona o fragmento à lista, mantendo apenas os últimos 50
-            val newLines = (currentState.consoleLines + snippet).takeLast(50)
-
-            currentState.copy(
-                pontos = newPoints,
-                consoleLines = newLines // Salva a nova lista no estado
+            // 8. Cria uma cópia do jogador com os novos pontos
+            val novoJogador = jogador.copy(
+                pontos = jogador.pontos + pontosGanhos
             )
-        }
-    }
 
-    // Função para comprar upgrades
-    fun onComprarUpgrades(tipo: String) {
-        val estadoAtual = _uiState.value
-        val amountToBuy = _multiplier.value // Quantidade a comprar (1, 10, 100)
+            // 9. Manda o repositório SALVAR o jogador no banco (Room)
+            gameRepository.updateJogador(novoJogador)
 
-        if (tipo == "click") {
-            val custoUnitario = 50
-            val custoTotal = custoUnitario * amountToBuy // Custo para N upgrades
-            val beneficioTotal = 1 * amountToBuy        // Benefício de N upgrades
-
-            if (estadoAtual.pontos >= custoTotal) {
-                _uiState.update {
-                    it.copy(
-                        pontos = it.pontos - custoTotal,
-                        pontosPorClique = it.pontosPorClique + beneficioTotal
-                    )
-                }
-            }
-        } else if (tipo == "pps") {
-            val custoUnitario = 100
-            val custoTotal = custoUnitario * amountToBuy
-            val beneficioTotal = 0.1 * amountToBuy // Benefício (Double)
-
-            if (estadoAtual.pontos >= custoTotal) {
-                _uiState.update {
-                    it.copy(
-                        pontos = it.pontos - custoTotal,
-                        pontosPorSegundo = it.pontosPorSegundo + beneficioTotal
-                    )
-                }
+            // 10. Atualiza o console (estado local)
+            val snippet = codeSnippets.random()
+            _consoleLines.update { currentLines ->
+                (currentLines + snippet).takeLast(50) // Mantém só as últimas 50
             }
         }
     }
+
+    // 11. A lógica de 'comprar' foi movida para o UpgradesViewModel
 }

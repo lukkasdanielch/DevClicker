@@ -1,42 +1,46 @@
 package com.example.devclicker.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+// 1. (A CORREÇÃO) Importe o 'hiltViewModel'
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.devclicker.MainActivity
+// 2. (A CORREÇÃO) Remova o import antigo
+// import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.devclicker.ui.game.clicker.ClickerScreen
 import com.example.devclicker.ui.game.clicker.ClickerViewModel
 import com.example.devclicker.ui.game.settings.SettingsScreen
 import com.example.devclicker.ui.game.settings.SettingsViewModel
 import com.example.devclicker.ui.game.upgrades.UpgradesScreen
+import com.example.devclicker.ui.game.upgrades.UpgradesViewModel
 import com.example.devclicker.ui.navegation.BottomNavItem
 
 @Composable
 fun GameNavGraph(
     gameNavController: NavHostController,
-    mainNavController: NavHostController,
-    factory: MainActivity.AppViewModelFactory
+    mainNavController: NavHostController
 ) {
-    val sharedViewModel: ClickerViewModel = viewModel(
-        factory = factory
-    )
     NavHost(
         navController = gameNavController,
         startDestination = BottomNavItem.Clicker.route
     ) {
         composable(BottomNavItem.Clicker.route) {
-            ClickerScreen(viewModel = sharedViewModel)
+            // 3. (A CORREÇÃO) Use 'hiltViewModel()'
+            val viewModel: ClickerViewModel = hiltViewModel()
+            ClickerScreen(navController = gameNavController, viewModel = viewModel)
         }
         composable(BottomNavItem.Upgrades.route) {
-            UpgradesScreen(viewModel = sharedViewModel)
+            // 4. (A CORREÇÃO) Use 'hiltViewModel()'
+            val viewModel: UpgradesViewModel = hiltViewModel()
+            UpgradesScreen(navController = gameNavController, viewModel = viewModel)
         }
         composable(BottomNavItem.Settings.route) {
-            val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
+            // 5. (A CORREÇÃO) Use 'hiltViewModel()'
+            val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
-                navController = mainNavController,
-                viewModel = settingsViewModel
+                mainNavController = mainNavController,
+                viewModel = viewModel
             )
         }
     }

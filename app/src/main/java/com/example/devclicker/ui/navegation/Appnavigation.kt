@@ -8,16 +8,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.example.devclicker.MainActivity
+
 
 @Composable
-fun Appnavigation(
-    factory: MainActivity.AppViewModelFactory
-) {
+fun AppNavigation() {
+
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
+    // Esta lógica de 'startDestination' está perfeita.
     DisposableEffect(Unit) {
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             startDestination = if (firebaseAuth.currentUser != null) {
@@ -40,10 +40,10 @@ fun Appnavigation(
             CircularProgressIndicator()
         }
     } else {
+        // 2. Chame o MainNavGraph SEM PASSAR a 'factory'
         MainNavGraph(
             navController = navController,
-            startDestination = startDestination!!,
-            factory = factory
+            startDestination = startDestination!!
         )
     }
 }

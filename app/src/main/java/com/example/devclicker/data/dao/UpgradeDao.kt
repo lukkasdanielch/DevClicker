@@ -6,37 +6,39 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.devclicker.data.model.Upgrade // Importa a Entidade
+
+import com.example.devclicker.data.model.UpgradeComprado
 import kotlinx.coroutines.flow.Flow
 import kotlin.collections.List
 
 @Dao
 interface UpgradeDao {
 
+    // 2. TODAS AS FUNÇÕES AGORA USAM "UpgradeComprado"
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(upgrade: Upgrade)
+    suspend fun inserir(upgrade: UpgradeComprado)
 
     @Update
-    suspend fun update(upgrade: Upgrade)
+    suspend fun update(upgrade: UpgradeComprado)
 
     @Delete
-    suspend fun delete(upgrade: Upgrade)
+    suspend fun delete(upgrade: UpgradeComprado)
 
     /**
      * Função crucial para obter todos os upgrades comprados por um jogador específico.
      */
     @Query("SELECT * FROM upgrades_comprados WHERE jogadorId = :jogadorId")
-    fun getUpgradesDoJogador(jogadorId: Int): Flow<List<Upgrade>>
+    fun getUpgradesDoJogador(jogadorId: Int): Flow<List<UpgradeComprado>>
 
     /**
      * Busca um upgrade comprado específico pelo seu ID.
      */
     @Query("SELECT * FROM upgrades_comprados WHERE id = :id")
-    fun getUpgradeById(id: Int): Flow<Upgrade?>
+    fun getUpgradeById(id: Int): Flow<UpgradeComprado?>
 
     /**
      * Retorna todos os upgrades comprados no banco de dados.
      */
     @Query("SELECT * FROM upgrades_comprados")
-    fun getAllUpgradesComprados(): Flow<List<Upgrade>>
+    fun getAllUpgradesComprados(): Flow<List<UpgradeComprado>>
 }

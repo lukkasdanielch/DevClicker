@@ -7,7 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.devclicker.MainActivity
+// 1. REMOVA A IMPORTAÇÃO DA FACTORY (NÃO PRECISAMOS MAIS)
+// import com.example.devclicker.MainActivity
 import com.example.devclicker.navigation.GameNavGraph
 import com.example.devclicker.ui.navegation.BottomNavItem
 
@@ -15,22 +16,24 @@ import com.example.devclicker.ui.navegation.BottomNavItem
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun GameScreen(
-    mainNavController: NavHostController,
-    factory: MainActivity.AppViewModelFactory
+    mainNavController: NavHostController
+    // 2. REMOVA O PARÂMETRO 'factory' DAQUI
+    // factory: MainActivity.AppViewModelFactory
 ) {
     val gameNavController = rememberNavController()
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController = gameNavController) }
     ) {
+
         GameNavGraph(
             gameNavController = gameNavController,
-            mainNavController = mainNavController,
-            factory = factory
+            mainNavController = mainNavController
         )
     }
 }
 
+// O seu BottomNavigationBar já está correto.
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
