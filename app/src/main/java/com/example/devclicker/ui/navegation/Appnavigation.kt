@@ -8,9 +8,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.example.devclicker.MainActivity
 
 @Composable
-fun Appnavigation() {
+fun Appnavigation(
+    factory: MainActivity.AppViewModelFactory
+) {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
     var startDestination by remember { mutableStateOf<String?>(null) }
@@ -37,7 +40,10 @@ fun Appnavigation() {
             CircularProgressIndicator()
         }
     } else {
-        // Isso agora funciona corretamente
-        MainNavGraph(navController = navController, startDestination = startDestination!!)
+        MainNavGraph(
+            navController = navController,
+            startDestination = startDestination!!,
+            factory = factory
+        )
     }
 }

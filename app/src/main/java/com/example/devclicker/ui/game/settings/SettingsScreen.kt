@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun SettingsScreen(navController: NavHostController) {
+fun SettingsScreen(navController: NavHostController, viewModel: SettingsViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -41,7 +41,7 @@ fun SettingsScreen(navController: NavHostController) {
 
         Button(
             onClick = {
-                FirebaseAuth.getInstance().signOut()
+                viewModel.logout()
                 navController.navigate("login_screen") {
                     popUpTo("game_screen") {
                         inclusive = true

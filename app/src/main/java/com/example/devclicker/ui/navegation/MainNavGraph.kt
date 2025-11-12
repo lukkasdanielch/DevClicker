@@ -1,28 +1,39 @@
 package com.example.devclicker.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.devclicker.MainActivity
 import com.example.devclicker.ui.auth.login.LoginScreen
+import com.example.devclicker.ui.auth.login.LoginViewModel
 import com.example.devclicker.ui.auth.signup.SignUpScreen
-import com.example.devclicker.ui.game.clicker.ClickerScreen // Importar
+import com.example.devclicker.ui.auth.signup.SignUpViewModel
+import com.example.devclicker.ui.game.clicker.ClickerScreen
 import com.example.devclicker.ui.game.game.GameScreen
-import com.example.devclicker.ui.game.settings.SettingsScreen // Importar
-import com.example.devclicker.ui.game.upgrades.UpgradesScreen // Importar
+import com.example.devclicker.ui.game.settings.SettingsScreen
+import com.example.devclicker.ui.game.settings.SettingsViewModel
+import com.example.devclicker.ui.game.upgrades.UpgradesScreen
 
 @Composable
-fun MainNavGraph(navController: NavHostController, startDestination: String) {
+fun MainNavGraph(
+    navController: NavHostController,
+    startDestination: String,
+    factory: MainActivity.AppViewModelFactory
+) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
         // Rotas de Autenticação
         composable("login_screen") {
-            LoginScreen(navController)
+            val viewModel: LoginViewModel = viewModel(factory = factory)
+            LoginScreen(navController, viewModel)
         }
         composable("signup_screen") {
-            SignUpScreen(navController)
+            val viewModel: SignUpViewModel = viewModel(factory = factory)
+            SignUpScreen(navController, viewModel)
         }
 
         // Rotas do Jogo
@@ -40,7 +51,8 @@ fun MainNavGraph(navController: NavHostController, startDestination: String) {
         }
 
         composable("settings_screen") {
-            SettingsScreen(navController = navController)
+            val viewModel: SettingsViewModel = viewModel(factory = factory)
+            SettingsScreen(navController = navController, viewModel = viewModel)
         }
     }
 }

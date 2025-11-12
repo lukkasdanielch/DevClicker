@@ -2,14 +2,16 @@ package com.example.devclicker.ui.auth.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
+import com.example.devclicker.data.repository.AuthRepository // Importar
+// import com.google.firebase.auth.FirebaseAuth // DELETAR ESTE IMPORT
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class SignUpViewModel : ViewModel() {
+class SignUpViewModel(
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
-    private val auth = FirebaseAuth.getInstance()
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
     val signUpState: StateFlow<SignUpState> = _signUpState
@@ -23,7 +25,8 @@ class SignUpViewModel : ViewModel() {
         _signUpState.value = SignUpState.Loading
 
         viewModelScope.launch {
-            auth.createUserWithEmailAndPassword(email, password)
+            // 3. Usar o authRepository
+            authRepository.signUp(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         _signUpState.value = SignUpState.Success
