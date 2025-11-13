@@ -26,24 +26,22 @@ O projeto segue o padrão **MVVM (Model-View-ViewModel)** e os princípios de "C
 ### Estrutura de Pacotes
 
 com.example.devclicker
-├── data
-│   ├── dao                # Interfaces do Room (JogadorDao, UpgradeDao)
-│   ├── database           # Definição do AppDatabase
-│   ├── model              # Entidades do Room (Jogador, UpgradeComprado)
-│   └── repository         # Lógica de negócios (GameRepository, AuthRepository)
 │
-│   
+├── data
+│   ├── dao/               # Interfaces do Room (JogadorDao, UpgradeDao)
+│   ├── database/          # Definição do AppDatabase
+│   ├── model/             # Entidades do Room (Jogador, UpgradeComprado)
+│   ├── repository/        # Lógica de negócios (GameRepository, AuthRepository)
+│   └── di/                # Módulo do Hilt (HiltModule.kt)
 │
 ├── ui
-│   ├── auth               # Telas de Login e Cadastro
-│   ├── game               # Telas do Jogo (Clicker, Upgrades, Settings)
-│   ├── navigation         # Lógica de navegação (NavGraphs, BottomNav)
-│   └── theme              # Definições de tema do Jetpack Compose
+│   ├── auth/              # Telas de Login e Cadastro
+│   ├── game/              # Telas do Jogo (Clicker, Upgrades, Settings)
+│   ├── navigation/        # Lógica de navegação (NavGraphs, BottomNav)
+│   └── theme/             # Definições de tema do Jetpack Compose
 │
-├── HilModule              # Módulo do Hilt
-├── MainAcitivity.kt       # Rota com o AppNavigation
+├── MainActivity.kt        # Rota principal com o AppNavigation
 └── MainApplication.kt     # Ponto de entrada do Hilt
-
 
 
 ## 🛠️ Como Rodar o Projeto
