@@ -31,7 +31,8 @@ fun SettingsScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Tela de Configurações")
+        Text("Tela de Configurações",
+            color = Color.White)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -56,6 +57,6 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Text("Desenvolvido por Allan, Lucas, Malik e Yago")
+        Text("Desenvolvido por Allan, Lucas, Malik e Yago",color = Color.White)
     }
 }

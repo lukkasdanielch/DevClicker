@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 
+
 data class FloatingTextInfo(
     val id: UUID = UUID.randomUUID(),
     val text: String
@@ -67,11 +68,13 @@ fun ClickerScreen(
     ) {
         Text(
             text = String.format("DevPoints: %.1f", uiState.pontos),
-            fontSize = 32.sp
+            fontSize = 32.sp,
+            color = Color.White
         )
         Text(
             text = String.format("Pontos p/ segundo: %.1f", uiState.pontosPorSegundo),
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            color = Color.White
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -119,7 +122,7 @@ fun ClickerScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(Color.Black, RoundedCornerShape(8.dp))
+                .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
                 .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                 .padding(8.dp)
         ) {

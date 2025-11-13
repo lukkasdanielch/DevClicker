@@ -4,10 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -23,6 +23,8 @@ fun UpgradesScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val matrixGreen = Color(0xFF00C853)
+
     LaunchedEffect(uiState.mensagemErro) {
         uiState.mensagemErro?.let {
             scope.launch { snackbarHostState.showSnackbar(it) }
@@ -35,9 +37,10 @@ fun UpgradesScreen(
             viewModel.onSuccessMessageShown()
         }
     }
-
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        // 2. Torne o Scaffold transparente
+        containerColor = Color.Transparent
     ) { padding ->
         Column(
             modifier = Modifier
@@ -49,13 +52,15 @@ fun UpgradesScreen(
 
             Text(
                 text = String.format("Pontos: %d", uiState.jogadorPontos),
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             MultiplierToggle(
                 selected = uiState.selectedMultiplier,
-                onSelected = { viewModel.onMultiplierSelected(it) }
+                onSelected = { viewModel.onMultiplierSelected(it) },
+                activeColor = matrixGreen
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -63,24 +68,35 @@ fun UpgradesScreen(
                 value = uiState.termoPesquisa,
                 onValueChange = { viewModel.onSearchTermChanged(it) },
                 label = { Text("Procurar upgrade...") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.LightGray,
+                    focusedIndicatorColor = matrixGreen,
+                    unfocusedIndicatorColor = Color.Gray,
+                    cursorColor = matrixGreen,
+                    focusedContainerColor = Color.DarkGray.copy(alpha = 0.5f),
+                    unfocusedContainerColor = Color.DarkGray.copy(alpha = 0.5f)
+                )
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             if (uiState.isLoading) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = matrixGreen)
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // (ATUALIZADO) Usa a nova lista 'displayUpgrades'
                     items(uiState.displayUpgrades, key = { it.definition.id }) { upgrade ->
                         UpgradeItem(
                             upgrade = upgrade,
                             onBuyClick = {
                                 viewModel.onBuyUpgrade(upgrade)
-                            }
+                            },
+                            buttonColor = matrixGreen
                         )
                     }
                 }
@@ -89,20 +105,26 @@ fun UpgradesScreen(
     }
 }
 
-/**
- * (NOVO) Composable para os botões 1x, 10x, 100x, Max
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MultiplierToggle(
     selected: PurchaseMultiplier,
-    onSelected: (PurchaseMultiplier) -> Unit
+    onSelected: (PurchaseMultiplier) -> Unit,
+    activeColor: Color
 ) {
     val options = listOf(
         PurchaseMultiplier.ONE,
         PurchaseMultiplier.TEN,
         PurchaseMultiplier.HUNDRED,
         PurchaseMultiplier.MAX
+    )
+
+    val buttonColors = SegmentedButtonDefaults.colors(
+        activeContainerColor = activeColor,
+        activeContentColor = Color.Black,
+        inactiveContainerColor = Color.DarkGray.copy(alpha = 0.5f),
+        inactiveContentColor = Color.White,
+        inactiveBorderColor = Color.Gray
     )
 
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -113,7 +135,8 @@ fun MultiplierToggle(
                     count = options.size
                 ),
                 onClick = { onSelected(multiplier) },
-                selected = (multiplier == selected)
+                selected = (multiplier == selected),
+                colors = buttonColors
             ) {
                 Text(multiplier.label)
             }
@@ -122,33 +145,50 @@ fun MultiplierToggle(
 }
 
 
-/**
- * (ATUALIZADO) Composable para mostrar o item de upgrade
- */
 @Composable
 fun UpgradeItem(
     upgrade: DisplayUpgrade,
-    onBuyClick: () -> Unit
+    onBuyClick: () -> Unit,
+    buttonColor: Color
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.DarkGray.copy(alpha = 0.6f)
+        )
+    ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = upgrade.definition.nome, style = MaterialTheme.typography.titleMedium)
-                Text(text = upgrade.definition.descricao, style = MaterialTheme.typography.bodySmall)
-                // Mostra o nível atual
+                Text(
+                    text = upgrade.definition.nome,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+                Text(
+                    text = upgrade.definition.descricao,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.LightGray
+                )
                 Text(
                     text = "Nível: ${upgrade.currentLevel}",
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
+
             Button(
                 onClick = onBuyClick,
-                enabled = upgrade.canAfford
+                enabled = upgrade.canAfford,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = buttonColor,
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color.DarkGray
+                )
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "Custo: ${upgrade.totalCost}")
