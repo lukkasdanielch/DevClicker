@@ -36,6 +36,7 @@ object HiltModule {
             AppDatabase::class.java,
             "devclicker_database"
         )   .allowMainThreadQueries()
+            .fallbackToDestructiveMigration() // <-- ADICIONE ESTA LINHA
             .build()
     }
 

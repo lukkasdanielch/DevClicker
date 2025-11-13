@@ -3,16 +3,23 @@ package com.example.devclicker.data.repository
 import com.example.devclicker.data.dao.JogadorDao
 import com.example.devclicker.data.dao.UpgradeDao
 import com.example.devclicker.data.model.Jogador
-import com.example.devclicker.data.model.UpgradeComprado // A Entidade do banco
-import com.example.devclicker.ui.game.upgrades.UpgradeDisponivel // O Modelo da "Loja"
+import com.example.devclicker.data.model.UpgradeComprado
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
+import kotlin.math.pow
 
 /**
- * Repositório principal do jogo (o "Cérebro").
- * Recebe os dois DAOs do Hilt.
+ * Nova classe para definir as propriedades de um upgrade na "loja".
  */
+data class UpgradeDefinition(
+    val id: String,
+    val nome: String,
+    val descricao: String,
+    val baseCost: Long,
+    val costIncreaseFactor: Double // Ex: 1.15 (15% mais caro por nível)
+)
+
 class GameRepository @Inject constructor(
     private val jogadorDao: JogadorDao,
     private val upgradeDao: UpgradeDao
@@ -22,35 +29,39 @@ class GameRepository @Inject constructor(
     // Lógica de Upgrades (A "Loja")
     // -----------------------------------------------------------------
 
-    private val upgradesDaLoja = listOf(
-        UpgradeDisponivel(
-            id = "1",
-            nome = "Aumentar Taxa de Clique",
-            descricao = "Aumenta seus pontos por clique em 1",
-            preco = 100
+    private val upgradeDefinitions = listOf(
+        UpgradeDefinition(
+            id = "ppc_v1",
+            nome = "Mouse Novo",
+            descricao = "Aumenta pontos por clique",
+            baseCost = 50,
+            costIncreaseFactor = 1.15
         ),
-        UpgradeDisponivel(
-            id = "2",
-            nome = "Multiplicador Básico",
-            descricao = "Dobra seus pontos por segundo",
-            preco = 500
+        UpgradeDefinition(
+            id = "pps_v1",
+            nome = "Script Básico",
+            descricao = "Gera 0.1 pontos por segundo por nível",
+            baseCost = 200,
+            costIncreaseFactor = 1.20
         ),
-        UpgradeDisponivel(
-            id = "3",
-            nome = "Ideia Genial",
-            descricao = "Aumenta muito seus pontos por clique",
-            preco = 2000
+        UpgradeDefinition(
+            id = "ppc_v2",
+            nome = "Teclado Mecânico",
+            descricao = "Aumenta muito pontos por clique",
+            baseCost = 1000,
+            costIncreaseFactor = 1.18
         ),
-        UpgradeDisponivel(
-            id = "4",
-            nome = "Café Forte",
-            descricao = "Melhora a velocidade de auto-clique",
-            preco = 1000
+        UpgradeDefinition(
+            id = "pps_v2",
+            nome = "Stack Overflow",
+            descricao = "Gera 1 ponto por segundo por nível",
+            baseCost = 5000,
+            costIncreaseFactor = 1.22
         )
     )
 
-    suspend fun getAvailableUpgrades(): List<UpgradeDisponivel> {
-        return upgradesDaLoja
+    suspend fun getUpgradeDefinitions(): List<UpgradeDefinition> {
+        return upgradeDefinitions
     }
 
     // -----------------------------------------------------------------
@@ -58,33 +69,44 @@ class GameRepository @Inject constructor(
     // -----------------------------------------------------------------
 
     /**
-     * Lógica para comprar um upgrade.
-     * Retorna 'true' se a compra foi bem-sucedida.
+     * Lógica transacional para comprar N níveis de um upgrade.
+     * (ESTA FUNÇÃO ESTÁ CORRIGIDA)
      */
-    suspend fun buyUpgrade(jogadorId: Int, upgrade: UpgradeDisponivel): Boolean {
-        // 'upgrade' é o UpgradeDisponivel (da loja)
+    suspend fun buyUpgradeLevels(
+        jogadorId: Int,
+        upgradeId: String,
+        levelsToBuy: Int,
+        totalCost: Long
+    ): Boolean {
+        // 1. (CORREÇÃO) Pega o jogador usando a nova função suspend
+        val jogador = jogadorDao.getJogador(jogadorId) ?: return false
 
-        val jogador = jogadorDao.getJogadorById(jogadorId).firstOrNull() ?: return false
-
-        if (jogador.pontos >= upgrade.preco) {
-            // 1. Debita os pontos
-            val novoJogador = jogador.copy(pontos = jogador.pontos - upgrade.preco)
-            jogadorDao.update(novoJogador)
-
-            // 2. (A CORREÇÃO ESTÁ AQUI)
-            // Salva o "UpgradeComprado" (a Entidade) no banco
-            val upgradeComprado = UpgradeComprado(
-                upgradeId = upgrade.id,
-                nome = upgrade.nome,
-                jogadorId = jogadorId,
-                preco = upgrade.preco,        // <-- PARÂMETRO 'preco' ADICIONADO
-                efeito = upgrade.descricao    // <-- PARÂMETRO 'efeito' ADICIONADO
-            )
-            upgradeDao.inserir(upgradeComprado) // <-- Esta é a linha 76
-
-            return true // Compra bem-sucedida
+        // 2. Verifica se tem dinheiro
+        if (jogador.pontos < totalCost) {
+            return false // Pontos insuficientes
         }
-        return false // Pontos insuficientes
+
+        // 3. Debita os pontos
+        val novoJogador = jogador.copy(pontos = jogador.pontos - totalCost)
+        jogadorDao.update(novoJogador)
+
+        // 4. (CORREÇÃO) Pega o upgrade atual no banco
+        val upgradeAtual = upgradeDao.getUpgrade(jogadorId, upgradeId) // <-- USA A NOVA FUNÇÃO
+
+        if (upgradeAtual != null) {
+            // Se já existe, ATUALIZA o nível (Soma o nível atual + os comprados)
+            val upgradeAtualizado = upgradeAtual.copy(level = upgradeAtual.level + levelsToBuy)
+            upgradeDao.update(upgradeAtualizado)
+        } else {
+            // Se é o primeiro, INSERE com o nível comprado
+            val novoUpgrade = UpgradeComprado(
+                jogadorId = jogadorId,
+                upgradeId = upgradeId,
+                level = levelsToBuy
+            )
+            upgradeDao.inserir(novoUpgrade)
+        }
+        return true // Sucesso
     }
 
     // -----------------------------------------------------------------

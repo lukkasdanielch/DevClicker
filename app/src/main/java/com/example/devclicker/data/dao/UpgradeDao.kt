@@ -25,6 +25,13 @@ interface UpgradeDao {
     suspend fun delete(upgrade: UpgradeComprado)
 
     /**
+     * (NOVA FUNÇÃO) Busca um upgrade específico de um jogador,
+     * para ser usada dentro de outras funções suspend.
+     */
+    @Query("SELECT * FROM upgrades_comprados WHERE jogadorId = :jogadorId AND upgradeId = :upgradeId LIMIT 1")
+    suspend fun getUpgrade(jogadorId: Int, upgradeId: String): UpgradeComprado?
+
+    /**
      * Função crucial para obter todos os upgrades comprados por um jogador específico.
      */
     @Query("SELECT * FROM upgrades_comprados WHERE jogadorId = :jogadorId")

@@ -3,6 +3,7 @@ package com.example.devclicker.ui.game.clicker
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.devclicker.data.model.Jogador
+import com.example.devclicker.data.model.UpgradeComprado
 import com.example.devclicker.data.repository.GameRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -10,25 +11,29 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel // 1. Habilitado para Hilt
+@HiltViewModel
 class ClickerViewModel @Inject constructor(
-    private val gameRepository: GameRepository // 2. Recebe o repositório
+    private val gameRepository: GameRepository
 ) : ViewModel() {
 
     // --- Fontes de Dados Internas ---
 
-    // 3. Busca o ID do jogador (do repositório)
     private val _jogadorId = flow { emit(gameRepository.getCurrentJogadorId()) }
 
-    // 4. Observa o Jogador (Flow) do banco de dados Room
     private val _jogadorFlow: Flow<Jogador?> = _jogadorId.flatMapLatest { id ->
         gameRepository.getJogadorById(id)
     }
 
-    // 5. Estado local apenas para as linhas do console
+    private val _upgradesCompradosFlow: Flow<List<UpgradeComprado>> = _jogadorId.flatMapLatest { id ->
+        gameRepository.getOwnedUpgrades(id)
+    }
+
     private val _consoleLines = MutableStateFlow<List<String>>(emptyList())
 
-    // Lista de fragmentos de código para o console
+    // (NOVO) Este StateFlow vai guardar os pontos fracionários
+    // que ainda não foram salvos no banco.
+    private val _pontosFlutuantesAcumulados = MutableStateFlow(0.0)
+
     private val codeSnippets = listOf(
         "fun main() { ... }", "System.out.println(\"Hello!\");", "const [count, setCount] ...",
         "@Composable", "SELECT * FROM users;", "import pandas as pd", "git commit -m \"fix\"",
@@ -37,16 +42,24 @@ class ClickerViewModel @Inject constructor(
 
     // --- Estado Público (UiState) ---
 
-    // 6. Combina os dados do banco (Jogador) com os dados locais (Console)
+    // (CORREÇÃO) Combina os QUATRO fluxos
     val uiState: StateFlow<ClickerUiState> = combine(
         _jogadorFlow,
-        _consoleLines
-    ) { jogador, consoleLines ->
+        _upgradesCompradosFlow,
+        _consoleLines,
+        _pontosFlutuantesAcumulados // Adiciona o novo acumulador
+    ) { jogador, upgradesComprados, consoleLines, pontosFlutuantes ->
+
+        val (ppc, pps) = calculateGameMechanics(upgradesComprados)
+
+        // Os pontos no banco (Long) são convertidos para Double
+        val pontosBaseDoBanco = jogador?.pontos?.toDouble() ?: 0.0
+
         ClickerUiState(
-            pontos = jogador?.pontos?.toDouble() ?: 0.0,
-            // TODO: A lógica de PPS e PPC deve vir dos upgrades comprados
-            pontosPorSegundo = 0.0,
-            pontosPorClique = 1L,
+            // Os pontos que o jogador vê são a soma do banco + os fracionários
+            pontos = pontosBaseDoBanco + pontosFlutuantes,
+            pontosPorSegundo = pps,
+            pontosPorClique = ppc,
             consoleLines = consoleLines
         )
     }.stateIn(
@@ -55,25 +68,55 @@ class ClickerViewModel @Inject constructor(
         initialValue = ClickerUiState()
     )
 
-    // --- Game Loop (Para Pontos Por Segundo) ---
+
+    private fun calculateGameMechanics(upgrades: List<UpgradeComprado>): Pair<Long, Double> {
+        var totalPPC = 1L
+        var totalPPS = 0.0
+
+        for (upgrade in upgrades) {
+            when (upgrade.upgradeId) {
+                "ppc_v1" -> { totalPPC += (1L * upgrade.level) }
+                "ppc_v2" -> { totalPPC += (5L * upgrade.level) }
+                "pps_v1" -> { totalPPS += (0.1 * upgrade.level) }
+                "pps_v2" -> { totalPPS += (1.0 * upgrade.level) }
+            }
+        }
+        return Pair(totalPPC, totalPPS)
+    }
+
+
+    // --- Game Loop (CORRIGIDO para PPS) ---
     init {
-        // Game Loop para Pontos por Segundo
         viewModelScope.launch {
             while (true) {
                 delay(100) // Roda 10x por segundo
-                val pontosGanhos = uiState.value.pontosPorSegundo / 10.0
 
-                if (pontosGanhos > 0) {
-                    // Pega o jogador atual
+                val pps = uiState.value.pontosPorSegundo
+                if (pps <= 0.0) continue // Não faz nada se não houver PPS
+
+                // 1. Calcula os pontos ganhos neste "tick" (ex: 0.1 pps -> 0.01 ganho)
+                val pontosGanhosNesteTick = pps / 10.0
+
+                // 2. Adiciona os pontos ganhos ao acumulador fracionário
+                _pontosFlutuantesAcumulados.update { it + pontosGanhosNesteTick }
+
+                // 3. Verifica se o acumulador tem pontos inteiros para salvar
+                // (ex: se o acumulador está em 1.5, isto será 1L)
+                val pontosInteirosParaSalvar = _pontosFlutuantesAcumulados.value.toLong()
+
+                if (pontosInteirosParaSalvar >= 1L) {
+                    // 4. Pega o jogador ATUAL do banco
                     val jogador = _jogadorFlow.firstOrNull() ?: continue
 
-                    // Cria a cópia com novos pontos (convertendo Double para Long)
+                    // 5. Salva os pontos inteiros no banco
                     val novoJogador = jogador.copy(
-                        pontos = (jogador.pontos + pontosGanhos).toLong()
+                        pontos = jogador.pontos + pontosInteirosParaSalvar
                     )
-
-                    // Salva no banco
                     gameRepository.updateJogador(novoJogador)
+
+                    // 6. Subtrai os pontos que acabamos de salvar do acumulador
+                    // (ex: 1.5 - 1 = 0.5)
+                    _pontosFlutuantesAcumulados.update { it - pontosInteirosParaSalvar }
                 }
             }
         }
@@ -83,28 +126,27 @@ class ClickerViewModel @Inject constructor(
 
     /**
      * Chamado toda vez que o usuário clica no botão principal.
+     * (Esta função já está correta e não mexe no console)
      */
     fun onDevClicked() {
         viewModelScope.launch {
-            // 7. Pega o estado ATUAL do jogador (do flow)
+            // Pega o estado ATUAL do jogador (do flow)
             val jogador = _jogadorFlow.firstOrNull() ?: return@launch
             val pontosGanhos = uiState.value.pontosPorClique
 
-            // 8. Cria uma cópia do jogador com os novos pontos
+            // Cria uma cópia do jogador com os novos pontos
             val novoJogador = jogador.copy(
                 pontos = jogador.pontos + pontosGanhos
             )
 
-            // 9. Manda o repositório SALVAR o jogador no banco (Room)
+            // Manda o repositório SALVAR o jogador no banco (Room)
             gameRepository.updateJogador(novoJogador)
 
-            // 10. Atualiza o console (estado local)
+            // Atualiza o console (estado local)
             val snippet = codeSnippets.random()
             _consoleLines.update { currentLines ->
                 (currentLines + snippet).takeLast(50) // Mantém só as últimas 50
             }
         }
     }
-
-    // 11. A lógica de 'comprar' foi movida para o UpgradesViewModel
 }

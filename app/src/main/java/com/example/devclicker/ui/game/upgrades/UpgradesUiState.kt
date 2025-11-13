@@ -1,37 +1,47 @@
-package com.example.devclicker.ui.game.upgrades // <-- Pacote da UI
+package com.example.devclicker.ui.game.upgrades
 
-import com.example.devclicker.data.model.UpgradeComprado // <-- Importa o @Entity do banco
+// A importação do modelo do banco mudou
+import com.example.devclicker.data.repository.UpgradeDefinition
 
 /**
- * 1. Modelo de dados SÓ PARA A TELA (UI Model).
- * Representa um upgrade na "loja".
- * Ele vive aqui, junto com o UiState.
+ * 1. (NOVO) Representa o multiplicador de compra selecionado.
+ * Usamos 'object' para 1x, 10x, 100x e 'object' para Max.
  */
-data class UpgradeDisponivel(
-    val id: String,
-    val nome: String,
-    val descricao: String,
-    val preco: Long,
+sealed class PurchaseMultiplier {
+    abstract val label: String
+
+    object ONE : PurchaseMultiplier() { override val label = "1x" }
+    object TEN : PurchaseMultiplier() { override val label = "10x" }
+    object HUNDRED : PurchaseMultiplier() { override val label = "100x" }
+    object MAX : PurchaseMultiplier() { override val label = "Max" }
+}
+
+/**
+ * 2. (NOVO) Modelo de dados SÓ PARA A TELA (UI Model).
+ * Contém o upgrade da loja + o progresso do jogador
+ */
+data class DisplayUpgrade(
+    val definition: UpgradeDefinition, // O que é (baseCost, nome, etc)
+    val currentLevel: Int,             // O nível que o jogador tem
+    val levelsToBuy: Int,              // Quantos níveis ele vai comprar (1, 10, 100, ou Max)
+    val totalCost: Long,               // O custo total para comprar 'levelsToBuy'
+    val canAfford: Boolean             // Se o jogador pode pagar
 )
 
 /**
- * 2. O Estado da Tela (UI State).
- * Ele "possui" e usa o UpgradeDisponivel.
+ * 3. O Estado da Tela (UI State) ATUALIZADO.
  */
 data class UpgradesUiState(
     val jogadorPontos: Long = 0,
-    val upgradesDisponiveis: List<UpgradeDisponivel> = emptyList(), // <-- Usa o modelo da UI
-    val upgradesComprados: List<UpgradeComprado> = emptyList(), // <-- Usa o modelo do Banco
+
+    // Esta é a lista principal que a UI vai mostrar
+    val displayUpgrades: List<DisplayUpgrade> = emptyList(),
+
+    // O multiplicador que o usuário selecionou
+    val selectedMultiplier: PurchaseMultiplier = PurchaseMultiplier.ONE,
+
     val termoPesquisa: String = "",
     val isLoading: Boolean = false,
     val mensagemErro: String? = null,
     val mensagemSucesso: String? = null
-) {
-    val upgradesParaComprar: List<UpgradeDisponivel>
-        get() {
-            val boughtApiIds = upgradesComprados.map { it.upgradeId }.toSet()
-            return upgradesDisponiveis
-                .filter { it.id !in boughtApiIds }
-                .filter { it.nome.contains(termoPesquisa, ignoreCase = true) }
-        }
-}
+)

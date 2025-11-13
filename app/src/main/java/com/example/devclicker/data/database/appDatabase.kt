@@ -12,7 +12,7 @@ import com.example.devclicker.data.model.Jogador
 import com.example.devclicker.data.model.UpgradeComprado
 
 
-@Database(entities = [Jogador::class, UpgradeComprado::class], version = 1)
+@Database(entities = [Jogador::class, UpgradeComprado::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     // Dentro da classe AppDatabase
     abstract fun upgradeDao(): UpgradeDao

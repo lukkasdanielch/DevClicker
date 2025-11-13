@@ -4,27 +4,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController // 1. IMPORTE O NavHostController
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpgradesScreen(
-    // 2. CORREÇÃO: A tela agora aceita os dois parâmetros
     navController: NavHostController,
     viewModel: UpgradesViewModel
 ) {
-    // 3. O 'uiState' agora vem do 'UpgradesViewModel'
     val uiState by viewModel.uiState.collectAsState()
-
-    // 4. Setup da Snackbar para mostrar erros e sucessos
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    // ... (Os LaunchedEffect para as snackbars estão corretos, pode manter) ...
     LaunchedEffect(uiState.mensagemErro) {
         uiState.mensagemErro?.let {
             scope.launch { snackbarHostState.showSnackbar(it) }
@@ -49,14 +48,19 @@ fun UpgradesScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // 5. Mostra os pontos do jogador (do UiState)
             Text(
                 text = String.format("Pontos: %d", uiState.jogadorPontos),
                 style = MaterialTheme.typography.headlineMedium
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 6. Barra de Pesquisa (do UiState)
+            // (NOVO) Botões de Multiplicador
+            MultiplierToggle(
+                selected = uiState.selectedMultiplier,
+                onSelected = { viewModel.onMultiplierSelected(it) }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             TextField(
                 value = uiState.termoPesquisa,
                 onValueChange = { viewModel.onSearchTermChanged(it) },
@@ -65,7 +69,6 @@ fun UpgradesScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 7. Lista de Upgrades
             if (uiState.isLoading) {
                 CircularProgressIndicator()
             } else {
@@ -73,11 +76,10 @@ fun UpgradesScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 8. Usa a lista filtrada 'upgradesParaComprar' (do UiState)
-                    items(uiState.upgradesParaComprar) { upgrade ->
+                    // (ATUALIZADO) Usa a nova lista 'displayUpgrades'
+                    items(uiState.displayUpgrades, key = { it.definition.id }) { upgrade ->
                         UpgradeItem(
                             upgrade = upgrade,
-                            podeComprar = uiState.jogadorPontos >= upgrade.preco,
                             onBuyClick = {
                                 viewModel.onBuyUpgrade(upgrade)
                             }
@@ -90,12 +92,44 @@ fun UpgradesScreen(
 }
 
 /**
- * Um Composable auxiliar para mostrar um item da lista de upgrades.
+ * (NOVO) Composable para os botões 1x, 10x, 100x, Max
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MultiplierToggle(
+    selected: PurchaseMultiplier,
+    onSelected: (PurchaseMultiplier) -> Unit
+) {
+    val options = listOf(
+        PurchaseMultiplier.ONE,
+        PurchaseMultiplier.TEN,
+        PurchaseMultiplier.HUNDRED,
+        PurchaseMultiplier.MAX
+    )
+
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        options.forEach { multiplier ->
+            SegmentedButton(
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = options.indexOf(multiplier),
+                    count = options.size
+                ),
+                onClick = { onSelected(multiplier) },
+                selected = (multiplier == selected)
+            ) {
+                Text(multiplier.label)
+            }
+        }
+    }
+}
+
+
+/**
+ * (ATUALIZADO) Composable para mostrar o item de upgrade
  */
 @Composable
 fun UpgradeItem(
-    upgrade: UpgradeDisponivel,
-    podeComprar: Boolean,
+    upgrade: DisplayUpgrade,
     onBuyClick: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -104,12 +138,29 @@ fun UpgradeItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = upgrade.nome, style = MaterialTheme.typography.titleMedium)
-                Text(text = upgrade.descricao, style = MaterialTheme.typography.bodySmall)
+                Text(text = upgrade.definition.nome, style = MaterialTheme.typography.titleMedium)
+                Text(text = upgrade.definition.descricao, style = MaterialTheme.typography.bodySmall)
+                // Mostra o nível atual
+                Text(
+                    text = "Nível: ${upgrade.currentLevel}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = onBuyClick, enabled = podeComprar) {
-                Text(text = "Custo: ${upgrade.preco}")
+            Button(
+                onClick = onBuyClick,
+                enabled = upgrade.canAfford // Habilita só se puder pagar
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Mostra o custo
+                    Text(text = "Custo: ${upgrade.totalCost}")
+                    // Mostra quantos vai comprar
+                    Text(
+                        text = "Comprar ${upgrade.levelsToBuy} Nv.",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
     }

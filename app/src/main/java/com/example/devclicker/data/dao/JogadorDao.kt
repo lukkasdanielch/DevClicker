@@ -21,15 +21,21 @@ interface JogadorDao {
     @Delete
     suspend fun delete(jogador: Jogador)
 
+    /**
+     * (NOVA FUNÇÃO) Busca um jogador pelo ID (não-Flow)
+     * para ser usada dentro de outras funções suspend.
+     */
+    @Query("SELECT * FROM jogadores WHERE id = :id")
+    suspend fun getJogador(id: Int): Jogador?
+
+    /**
+     * (Esta é observada pela UI)
+     */
     @Query("SELECT * FROM jogadores WHERE id = :id")
     fun getJogadorById(id: Int): Flow<Jogador?>
 
     @Query("SELECT * FROM jogadores WHERE nome = :nome LIMIT 1")
     suspend fun getJogadorByNome(nome: String): Jogador?
-
-    //
-    // A FUNÇÃO login() FOI REMOVIDA DAQUI
-    //
 
     @Query("SELECT * FROM jogadores")
     fun getAllJogadores(): Flow<List<Jogador>>

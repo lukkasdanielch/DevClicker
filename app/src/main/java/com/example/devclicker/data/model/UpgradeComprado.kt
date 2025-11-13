@@ -1,8 +1,8 @@
 package com.example.devclicker.data.model
 
-import androidx.room.ColumnInfo // 1. IMPORTE O ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -12,25 +12,19 @@ import androidx.room.PrimaryKey
         parentColumns = ["id"],
         childColumns = ["jogadorId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    // Precisamos de um índice para encontrar rapidamente o upgrade de um jogador
+    indices = [Index(value = ["jogadorId", "upgradeId"], unique = true)]
 )
 data class UpgradeComprado(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    // 2. (A CORREÇÃO PRINCIPAL)
-    // Mapeia a coluna "upgradeApiId" (do banco)
-    // para a propriedade "upgradeId" (do Kotlin)
-    @ColumnInfo(name = "upgradeApiId")
+    val jogadorId: Int,
+
+    // Este é o ID que linka com a definição do upgrade (ex: "click_v1")
     val upgradeId: String,
 
-    val nome: String,
-
-    // 3. (A SEGUNDA CORREÇÃO)
-    // Adicione as colunas que estavam faltando
-    // (O erro disse que a query retornou 'preco' e 'efeito')
-    val preco: Long,
-    val efeito: String,
-
-    val jogadorId: Int
+    // A mudança crucial: Trocamos os campos antigos por "level"
+    val level: Int
 )
