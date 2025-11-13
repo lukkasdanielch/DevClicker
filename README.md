@@ -31,7 +31,7 @@ com.example.devclicker
 │   ├── database           # Definição do AppDatabase
 │   ├── model              # Entidades do Room (Jogador, UpgradeComprado)
 │   └── repository         # Lógica de negócios (GameRepository, AuthRepository)
-│   
+│
 │   
 │
 ├── ui
