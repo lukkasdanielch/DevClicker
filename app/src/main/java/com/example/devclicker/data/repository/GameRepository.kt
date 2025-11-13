@@ -9,26 +9,18 @@ import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import kotlin.math.pow
 
-/**
- * Nova classe para definir as propriedades de um upgrade na "loja".
- */
 data class UpgradeDefinition(
     val id: String,
     val nome: String,
     val descricao: String,
     val baseCost: Long,
-    val costIncreaseFactor: Double // Ex: 1.15 (15% mais caro por nível)
+    val costIncreaseFactor: Double
 )
 
 class GameRepository @Inject constructor(
     private val jogadorDao: JogadorDao,
     private val upgradeDao: UpgradeDao
 ) {
-
-    // -----------------------------------------------------------------
-    // Lógica de Upgrades (A "Loja")
-    // -----------------------------------------------------------------
-
     private val upgradeDefinitions = listOf(
         UpgradeDefinition(
             id = "ppc_v1",
@@ -64,41 +56,27 @@ class GameRepository @Inject constructor(
         return upgradeDefinitions
     }
 
-    // -----------------------------------------------------------------
-    // Lógica de Negócio (Comprar)
-    // -----------------------------------------------------------------
-
-    /**
-     * Lógica transacional para comprar N níveis de um upgrade.
-     * (ESTA FUNÇÃO ESTÁ CORRIGIDA)
-     */
     suspend fun buyUpgradeLevels(
         jogadorId: Int,
         upgradeId: String,
         levelsToBuy: Int,
         totalCost: Long
     ): Boolean {
-        // 1. (CORREÇÃO) Pega o jogador usando a nova função suspend
         val jogador = jogadorDao.getJogador(jogadorId) ?: return false
 
-        // 2. Verifica se tem dinheiro
         if (jogador.pontos < totalCost) {
-            return false // Pontos insuficientes
+            return false
         }
 
-        // 3. Debita os pontos
         val novoJogador = jogador.copy(pontos = jogador.pontos - totalCost)
         jogadorDao.update(novoJogador)
 
-        // 4. (CORREÇÃO) Pega o upgrade atual no banco
-        val upgradeAtual = upgradeDao.getUpgrade(jogadorId, upgradeId) // <-- USA A NOVA FUNÇÃO
+        val upgradeAtual = upgradeDao.getUpgrade(jogadorId, upgradeId)
 
         if (upgradeAtual != null) {
-            // Se já existe, ATUALIZA o nível (Soma o nível atual + os comprados)
             val upgradeAtualizado = upgradeAtual.copy(level = upgradeAtual.level + levelsToBuy)
             upgradeDao.update(upgradeAtualizado)
         } else {
-            // Se é o primeiro, INSERE com o nível comprado
             val novoUpgrade = UpgradeComprado(
                 jogadorId = jogadorId,
                 upgradeId = upgradeId,
@@ -108,11 +86,6 @@ class GameRepository @Inject constructor(
         }
         return true // Sucesso
     }
-
-    // -----------------------------------------------------------------
-    // Lógica do Jogador e Upgrades (Banco de Dados Room)
-    // -----------------------------------------------------------------
-
     fun getJogadorById(id: Int): Flow<Jogador?> {
         return jogadorDao.getJogadorById(id)
     }

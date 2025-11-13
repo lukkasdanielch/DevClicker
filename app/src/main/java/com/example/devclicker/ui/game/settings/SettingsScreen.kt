@@ -13,11 +13,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
-// import com.google.firebase.auth.FirebaseAuth // <-- REMOVA ESTE IMPORT (ViewModel cuida disso)
 
 @Composable
 fun SettingsScreen(
-    // 1. (A CORREÇÃO) Mude o nome do parâmetro para 'mainNavController'
     mainNavController: NavHostController,
     viewModel: SettingsViewModel
 ) {
@@ -33,7 +31,7 @@ fun SettingsScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Tela de Configurações / Admin")
+        Text("Tela de Configurações")
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -41,10 +39,7 @@ fun SettingsScreen(
 
         Button(
             onClick = {
-                // 2. (CORREÇÃO) Chame a função correta no ViewModel
                 viewModel.onLogoutClicked()
-
-                // 3. (CORREÇÃO) Use o 'mainNavController' para navegar
                 mainNavController.navigate("login_screen") {
                     popUpTo("game_screen") {
                         inclusive = true

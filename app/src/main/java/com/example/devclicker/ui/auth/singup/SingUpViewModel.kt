@@ -12,17 +12,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel // <-- Hilt, este ViewModel é seu
+@HiltViewModel
 class SignUpViewModel @Inject constructor(
-    // 1. Eu preciso destas duas peças:
     private val authRepository: AuthRepository,
-    private val jogadorRepository: JogadorRepository // <-- O parâmetro que faltava
+    private val jogadorRepository: JogadorRepository
 ) : ViewModel() {
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
     val signUpState: StateFlow<SignUpState> = _signUpState.asStateFlow()
 
-    // O ViewModel agora precisa do 'nome'
     fun signUp(nome: String, email: String, password: String) {
         if (nome.isBlank() || email.isBlank() || password.isBlank()) {
             _signUpState.value = SignUpState.Error("Preencha todos os campos")
@@ -32,24 +30,20 @@ class SignUpViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Etapa 1: Firebase (com a Peça 1)
                 authRepository.signUp(email, password)
 
-                // Etapa 2: Room (com a Peça 2)
                 val novoJogador = Jogador(nome = nome, pontos = 0)
                 jogadorRepository.insert(novoJogador)
 
                 _signUpState.value = SignUpState.Success
 
             } catch (e: Exception) {
-                // Se qualquer etapa falhar, o erro cai aqui
                 _signUpState.value = SignUpState.Error(e.message ?: "Erro ao cadastrar")
             }
         }
     }
 }
 
-// Mova isso para seu próprio arquivo: SignUpState.kt
 sealed class SignUpState {
     object Idle : SignUpState()
     object Loading : SignUpState()

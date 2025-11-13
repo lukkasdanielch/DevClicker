@@ -13,8 +13,6 @@ import kotlin.collections.List
 
 @Dao
 interface UpgradeDao {
-
-    // 2. TODAS AS FUNÇÕES AGORA USAM "UpgradeComprado"
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun inserir(upgrade: UpgradeComprado)
 

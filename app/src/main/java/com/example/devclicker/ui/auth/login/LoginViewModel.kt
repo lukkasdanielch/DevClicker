@@ -16,7 +16,6 @@ class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // 3. Usa a sua sealed class para emitir o estado
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
@@ -33,10 +32,6 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // --- ETAPA ÚNICA: Autenticação (Falar com o Firebase) ---
-                // Tenta fazer o login.
-                // Se falhar (ex: senha errada), o 'await()' lança uma exceção
-                // e o código pula direto para o 'catch'.
                 val authResult = authRepository.login(email, password)
 
                 if (authResult.user != null) {
@@ -44,7 +39,6 @@ class LoginViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                // Se o login falhar, o erro será capturado aqui.
                 _loginState.value = LoginState.Error(e.message ?: "Erro ao fazer login")
             }
         }
@@ -57,8 +51,8 @@ class LoginViewModel @Inject constructor(
  * como 'LoginState.kt')
  */
 sealed class LoginState {
-    object Idle : LoginState()      // Estado inicial
-    object Loading : LoginState()   // Carregando
-    object Success : LoginState()   // Sucesso no login
-    data class Error(val message: String) : LoginState() // Erro
+    object Idle : LoginState()
+    object Loading : LoginState()
+    object Success : LoginState()
+    data class Error(val message: String) : LoginState()
 }

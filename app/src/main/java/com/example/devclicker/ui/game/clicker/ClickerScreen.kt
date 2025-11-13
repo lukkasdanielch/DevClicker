@@ -29,7 +29,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-// Data class para controlar cada texto flutuante
 data class FloatingTextInfo(
     val id: UUID = UUID.randomUUID(),
     val text: String
@@ -37,26 +36,21 @@ data class FloatingTextInfo(
 
 @Composable
 fun ClickerScreen(
-    // 2. (A CORREÇÃO) A tela agora aceita o NavController
     navController: NavHostController,
     viewModel: ClickerViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Lista para armazenar os textos flutuantes
     val floatingTexts = remember { mutableStateListOf<FloatingTextInfo>() }
 
-    // Estado para o LazyColumn (console)
     val consoleListState = rememberLazyListState()
 
-    // Efeito para rolar o console para baixo automaticamente
     LaunchedEffect(uiState.consoleLines.size) {
         if (uiState.consoleLines.isNotEmpty()) {
             consoleListState.animateScrollToItem(uiState.consoleLines.size - 1)
         }
     }
 
-    // Layout da Tela
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,9 +58,7 @@ fun ClickerScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // 1. Stats (Topo)
         Text(
-            // 3. Lendo os dados corretos do UiState
             text = String.format("DevPoints: %.1f", uiState.pontos),
             fontSize = 32.sp
         )
@@ -77,13 +69,12 @@ fun ClickerScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. Imagem Clicável
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(150.dp)
                 .clickable {
-                    viewModel.onDevClicked() // 4. Chama o ViewModel
+                    viewModel.onDevClicked()
                     floatingTexts.add(FloatingTextInfo(text = "+${uiState.pontosPorClique}"))
                 }
         ) {
@@ -105,7 +96,6 @@ fun ClickerScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 3. Console (Este código já estava ótimo)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,7 +121,6 @@ fun ClickerScreen(
     }
 }
 
-// O seu Composable 'FloatingText' (já estava ótimo)
 @Composable
 fun FloatingText(
     textInfo: FloatingTextInfo,

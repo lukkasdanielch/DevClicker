@@ -26,17 +26,14 @@ fun GameNavGraph(
         startDestination = BottomNavItem.Clicker.route
     ) {
         composable(BottomNavItem.Clicker.route) {
-            // 3. (A CORREÇÃO) Use 'hiltViewModel()'
             val viewModel: ClickerViewModel = hiltViewModel()
             ClickerScreen(navController = gameNavController, viewModel = viewModel)
         }
         composable(BottomNavItem.Upgrades.route) {
-            // 4. (A CORREÇÃO) Use 'hiltViewModel()'
             val viewModel: UpgradesViewModel = hiltViewModel()
             UpgradesScreen(navController = gameNavController, viewModel = viewModel)
         }
         composable(BottomNavItem.Settings.route) {
-            // 5. (A CORREÇÃO) Use 'hiltViewModel()'
             val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
                 mainNavController = mainNavController,

@@ -36,7 +36,7 @@ object HiltModule {
             AppDatabase::class.java,
             "devclicker_database"
         )   .allowMainThreadQueries()
-            .fallbackToDestructiveMigration() // <-- ADICIONE ESTA LINHA
+            .fallbackToDestructiveMigration()
             .build()
     }
 
@@ -52,13 +52,4 @@ object HiltModule {
     fun provideUpgradeDao(appDatabase: AppDatabase): UpgradeDao {
         return appDatabase.upgradeDao()
     }
-
-    // --- Repositórios (Os "Cérebros") ---
-    // (O Hilt já sabe como fazer AuthRepository e JogadorRepository
-    // porque eles usam @Inject constructor. Mas para o GameRepository,
-    // é bom ser explícito ou garantir que ele também use @Inject)
-
-    // O GameRepository que te passei usa @Inject, então esta
-    // função @Provides abaixo NÃO é necessária. O Hilt já sabe como
-    // "fabricar" o GameRepository.
 }

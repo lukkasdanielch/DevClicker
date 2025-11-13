@@ -12,21 +12,19 @@ import androidx.navigation.NavController
 import com.example.devclicker.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
-import kotlinx.coroutines.launch // 1. (Provável que esteja faltando) Importe o 'launch'
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(
     navController: NavController,
-    viewModel: SignUpViewModel = viewModel() // Hilt vai criar o ViewModel
+    viewModel: SignUpViewModel = viewModel()
 ) {
     val signUpState by viewModel.signUpState.collectAsState()
 
-    // 2. ADICIONE A VARIÁVEL 'nome'
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // (Para a Snackbar, que você não tinha, mas é necessária para o 'Error')
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
@@ -50,7 +48,6 @@ fun SignUpScreen(
             Text(text = "Criar Conta", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 3. ADICIONE O CAMPO DE TEXTO PARA O 'nome'
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
@@ -79,7 +76,6 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                // 4. A CHAMADA AGORA FUNCIONA (pois 'nome' existe)
                 onClick = { viewModel.signUp(nome, email, password) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
@@ -95,7 +91,6 @@ fun SignUpScreen(
                 Text("Já tem conta? Faça login")
             }
 
-            // 5. Lógica de estado corrigida para usar 'isLoading' e Snackbar
             LaunchedEffect(signUpState) {
                 when (val state = signUpState) {
                     is SignUpState.Loading -> {
@@ -120,7 +115,6 @@ fun SignUpScreen(
             }
         }
 
-        // 6. Adicione a SnackbarHost no final
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)

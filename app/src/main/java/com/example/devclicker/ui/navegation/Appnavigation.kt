@@ -16,8 +16,6 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
     var startDestination by remember { mutableStateOf<String?>(null) }
-
-    // Esta lógica de 'startDestination' está perfeita.
     DisposableEffect(Unit) {
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             startDestination = if (firebaseAuth.currentUser != null) {
@@ -40,7 +38,6 @@ fun AppNavigation() {
             CircularProgressIndicator()
         }
     } else {
-        // 2. Chame o MainNavGraph SEM PASSAR a 'factory'
         MainNavGraph(
             navController = navController,
             startDestination = startDestination!!

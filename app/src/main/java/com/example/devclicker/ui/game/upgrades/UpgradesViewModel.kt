@@ -7,11 +7,10 @@ import com.example.devclicker.data.model.UpgradeComprado
 import com.example.devclicker.data.repository.GameRepository
 import com.example.devclicker.data.repository.UpgradeDefinition
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers // 1. IMPORTAR DISPATCHERS
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext // 2. IMPORTAR WITHCONTEXT
-import java.lang.Math.log
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.floor
 import kotlin.math.log
@@ -21,8 +20,6 @@ import kotlin.math.pow
 class UpgradesViewModel @Inject constructor(
     private val gameRepository: GameRepository
 ) : ViewModel() {
-
-    // --- Fontes de Dados Internas ---
     private val _jogadorId = flow { emit(gameRepository.getCurrentJogadorId()) }
     private val _jogadorFlow: Flow<Jogador?> = _jogadorId.flatMapLatest { gameRepository.getJogadorById(it) }
     private val _upgradesCompradosFlow: Flow<List<UpgradeComprado>> = _jogadorId.flatMapLatest { gameRepository.getOwnedUpgrades(it) }
@@ -34,16 +31,12 @@ class UpgradesViewModel @Inject constructor(
     private val _mensagemSucesso = MutableStateFlow<String?>(null)
     private val _multiplier = MutableStateFlow<PurchaseMultiplier>(PurchaseMultiplier.ONE)
 
-
-    // 1. Crie uma data class local para o pacote de interação
     private data class InteractionState(
         val pesquisa: String,
         val multiplier: PurchaseMultiplier,
         val erro: String?,
         val sucesso: String?
     )
-
-    // 2. Combine os fluxos de DADOS (Jogador, Inventário, Definições da Loja)
     private val _dataFlow = combine(
         _jogadorFlow,
         _upgradesCompradosFlow,
@@ -52,7 +45,6 @@ class UpgradesViewModel @Inject constructor(
         Triple(jogador, comprados, definitions)
     }
 
-    // 3. Combine os fluxos de INTERAÇÃO (Pesquisa, Multiplicador, Mensagens)
     private val _interactionFlow = combine(
         _termoPesquisa,
         _multiplier,
@@ -62,13 +54,11 @@ class UpgradesViewModel @Inject constructor(
         InteractionState(pesquisa, multiplier, erro, sucesso)
     }
 
-    // 4. Combine os DOIS "pacotes" resultantes
     val uiState: StateFlow<UpgradesUiState> = combine(
         _dataFlow,
         _interactionFlow
     ) { data, interaction ->
 
-        // Desempacota os valores
         val (jogador, comprados, definitions) = data
         val (pesquisa, multiplier, erro, sucesso) = interaction
 
@@ -111,8 +101,6 @@ class UpgradesViewModel @Inject constructor(
         initialValue = UpgradesUiState(isLoading = true)
     )
 
-    // --- Funções de Evento (Chamadas pela UI) ---
-
     fun onSearchTermChanged(termo: String) {
         _termoPesquisa.value = termo
     }
@@ -121,14 +109,9 @@ class UpgradesViewModel @Inject constructor(
         _multiplier.value = multiplier
     }
 
-    /**
-     * (FUNÇÃO CORRIGIDA com Dispatchers.IO)
-     */
     fun onBuyUpgrade(upgrade: DisplayUpgrade) {
-        // 3. (CORREÇÃO) Mude o Dispatcher para IO (Input/Output)
         viewModelScope.launch(Dispatchers.IO) {
             if (!upgrade.canAfford) {
-                // 4. (CORREÇÃO) Volte para a thread Main para mostrar a UI
                 withContext(Dispatchers.Main) {
                     _mensagemErro.value = "Pontos insuficientes!"
                 }
@@ -136,10 +119,8 @@ class UpgradesViewModel @Inject constructor(
             }
 
             try {
-                // Esta é a primeira chamada de 'suspend'
                 val jogadorId = _jogadorId.first()
 
-                // Esta é a chamada principal ao banco
                 val sucesso = gameRepository.buyUpgradeLevels(
                     jogadorId = jogadorId,
                     upgradeId = upgrade.definition.id,
@@ -147,7 +128,6 @@ class UpgradesViewModel @Inject constructor(
                     totalCost = upgrade.totalCost
                 )
 
-                // 5. (CORREÇÃO) Volte para a thread Main para mostrar a UI
                 withContext(Dispatchers.Main) {
                     if (sucesso) {
                         _mensagemSucesso.value = "${upgrade.definition.nome} Nv. ${upgrade.currentLevel + upgrade.levelsToBuy}!"
@@ -156,7 +136,6 @@ class UpgradesViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                // 6. (CORREÇÃO) Volte para a thread Main para mostrar o erro
                 withContext(Dispatchers.Main) {
                     _mensagemErro.value = e.message ?: "Erro desconhecido"
                 }
@@ -166,9 +145,6 @@ class UpgradesViewModel @Inject constructor(
 
     fun onErrorMessageShown() { _mensagemErro.value = null }
     fun onSuccessMessageShown() { _mensagemSucesso.value = null }
-
-
-    // --- Funções de Cálculo (a "mágica" da matemática) ---
 
     private fun calculateGeometricSeriesSum(baseCost: Long, factor: Double, currentLevel: Int, n: Int): Long {
         if (n <= 0) return 0L
@@ -182,11 +158,13 @@ class UpgradesViewModel @Inject constructor(
         if (pontos <= 0) return 0
         val firstLevelCost = baseCost * factor.pow(currentLevel)
         if (pontos < firstLevelCost) return 0
-
         if (factor == 1.0) return (pontos / firstLevelCost).toInt()
 
-        val logBase = log(factor)
-        val n = log( (pontos * (factor - 1.0) / firstLevelCost) + 1.0 ) / logBase
+        val n = log(
+            x = (pontos * (factor - 1.0) / firstLevelCost) + 1.0,
+            base = factor
+        )
+
         return floor(n).toInt()
     }
 
@@ -219,7 +197,6 @@ class UpgradesViewModel @Inject constructor(
                 return Pair(levelsToBuy, totalCost)
             }
         }
-
         if (multiplier == PurchaseMultiplier.ONE && pontos < totalCost) {
             return Pair(levelsToBuy, totalCost)
         }

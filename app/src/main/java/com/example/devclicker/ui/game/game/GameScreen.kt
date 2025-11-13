@@ -7,8 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-// 1. REMOVA A IMPORTAÇÃO DA FACTORY (NÃO PRECISAMOS MAIS)
-// import com.example.devclicker.MainActivity
 import com.example.devclicker.navigation.GameNavGraph
 import com.example.devclicker.ui.navegation.BottomNavItem
 
@@ -17,8 +15,6 @@ import com.example.devclicker.ui.navegation.BottomNavItem
 @Composable
 fun GameScreen(
     mainNavController: NavHostController
-    // 2. REMOVA O PARÂMETRO 'factory' DAQUI
-    // factory: MainActivity.AppViewModelFactory
 ) {
     val gameNavController = rememberNavController()
 
@@ -33,7 +29,6 @@ fun GameScreen(
     }
 }
 
-// O seu BottomNavigationBar já está correto.
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(

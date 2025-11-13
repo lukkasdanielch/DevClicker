@@ -23,7 +23,6 @@ fun UpgradesScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    // ... (Os LaunchedEffect para as snackbars estão corretos, pode manter) ...
     LaunchedEffect(uiState.mensagemErro) {
         uiState.mensagemErro?.let {
             scope.launch { snackbarHostState.showSnackbar(it) }
@@ -54,7 +53,6 @@ fun UpgradesScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // (NOVO) Botões de Multiplicador
             MultiplierToggle(
                 selected = uiState.selectedMultiplier,
                 onSelected = { viewModel.onMultiplierSelected(it) }
@@ -150,12 +148,10 @@ fun UpgradeItem(
             Spacer(modifier = Modifier.width(16.dp))
             Button(
                 onClick = onBuyClick,
-                enabled = upgrade.canAfford // Habilita só se puder pagar
+                enabled = upgrade.canAfford
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Mostra o custo
                     Text(text = "Custo: ${upgrade.totalCost}")
-                    // Mostra quantos vai comprar
                     Text(
                         text = "Comprar ${upgrade.levelsToBuy} Nv.",
                         style = MaterialTheme.typography.labelSmall
