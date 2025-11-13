@@ -98,14 +98,27 @@ object GameData {
         "README.md",
         "final int MAX_RETRIES = 3;",
         "#include <iostream>",
-        "using namespace std;"
-    )
+        "using namespace std;",
 
-    /**
-     * Mensagens de erro e warnings comuns em desenvolvimento.
-     * Podem ser usadas para eventos aleatórios ou pop-ups no jogo.
-     */
-    val errorMessages = listOf(
+        // Outros depois dos outros
+        "androidx.core:core-ktx:1.17.0",
+        "androidx.appcompat:appcompat:1.7.0",
+        "com.google.android.material:material:1.12.0",
+        "androidx.compose.ui:ui:1.6.8",
+        "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2",
+        "com.squareup.retrofit2:retrofit:2.9.0",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3",
+        "com.github.bumptech.glide:glide:4.16.0",
+        "io.ktor:ktor-server-netty:2.3.11",
+        "org.springframework.boot:spring-boot-starter-web:3.3.0",
+        "react: 18.2.0",
+        "express: 4.18.2",
+        "pandas: 2.2.1",
+        "numpy: 1.26.4",
+        "tensorflow: 2.15.0",
+        "junit:junit:4.13.2",
+        "org.mockito:mockito-core:5.11.0",
+
         "NullPointerException: Attempt to invoke virtual method on a null object reference",
         "SyntaxError: Unexpected token",
         "TypeError: Cannot read property 'map' of undefined",
@@ -124,26 +137,16 @@ object GameData {
         "warning: Each child in a list should have a unique 'key' prop.",
         "ConstraintLayout\$LayoutParams cannot be cast to android.widget.LinearLayout\$LayoutParams",
         "Unable to resolve dependency for ':app@debug/compileClasspath'",
-        "Your branch is ahead of 'origin/main' by 3 commits."
-    )
+        "Your branch is ahead of 'origin/main' by 3 commits.",
 
-    /**
-     * Nomes de arquivos e diretórios para simular uma estrutura de projeto.
-     */
-    val fileNames = listOf(
         "MainActivity.kt", "User.java", "styles.css", "index.html", "App.js",
         "UserRepository.kt", "DatabaseHelper.java", "api.py", "package.json",
         "build.gradle.kts", "settings.gradle.kts", "Dockerfile", "README.md",
         "GameViewModel.kt", "Player.kt", "utils.js", "constants.ts",
         "strings.xml", "layout_activity_main.xml", "schema.sql", "test_main.py",
         ".gitignore", "LICENSE", "config.yaml", "src/", "main/", "res/", "drawable/",
-        "components/", "server/", "node_modules/", "venv/"
-    )
+        "components/", "server/", "node_modules/", "venv/",
 
-    /**
-     * Mensagens de commit para simular um histórico de controle de versão.
-     */
-    val commitMessages = listOf(
         "feat: Implement user login feature",
         "fix: Correct calculation for high scores",
         "docs: Update README with setup instructions",
@@ -162,28 +165,5 @@ object GameData {
         "test: Fix flaky UI test",
         "revert: Revert last commit due to bug",
         "feat: Implement achievements system"
-    )
-
-    /**
-     * Nomes de bibliotecas e dependências.
-     */
-    val dependencies = listOf(
-        "androidx.core:core-ktx:1.17.0",
-        "androidx.appcompat:appcompat:1.7.0",
-        "com.google.android.material:material:1.12.0",
-        "androidx.compose.ui:ui:1.6.8",
-        "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2",
-        "com.squareup.retrofit2:retrofit:2.9.0",
-        "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3",
-        "com.github.bumptech.glide:glide:4.16.0",
-        "io.ktor:ktor-server-netty:2.3.11",
-        "org.springframework.boot:spring-boot-starter-web:3.3.0",
-        "react: 18.2.0",
-        "express: 4.18.2",
-        "pandas: 2.2.1",
-        "numpy: 1.26.4",
-        "tensorflow: 2.15.0",
-        "junit:junit:4.13.2",
-        "org.mockito:mockito-core:5.11.0"
     )
 }
