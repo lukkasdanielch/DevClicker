@@ -11,7 +11,9 @@ import androidx.navigation.NavHostController
 import com.example.devclicker.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 
 @Composable
@@ -24,15 +26,14 @@ fun SettingsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Text("Tela de Configurações", color = Color.White)
+
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
-            modifier = Modifier.size(120.dp)
+            modifier = Modifier.size(120.dp).clip(CircleShape)
         )
         Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Tela de Configurações",
-            color = Color.White)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -52,7 +53,7 @@ fun SettingsScreen(
                 contentColor = Color.White
             )
         ) {
-            Text("Sair (Logout)")
+            Text("Sair")
         }
 
         Spacer(modifier = Modifier.height(30.dp))

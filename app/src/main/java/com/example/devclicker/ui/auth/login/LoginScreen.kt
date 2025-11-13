@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import com.example.devclicker.ui.theme.MatrixBackground
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextFieldDefaults
+import com.example.devclicker.ui.theme.matrixGreen
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
@@ -28,7 +29,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
     var password by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val matrixGreen = Color(0xFF00C853)
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         MatrixBackground()

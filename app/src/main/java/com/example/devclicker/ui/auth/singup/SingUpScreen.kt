@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextFieldDefaults
 import com.example.devclicker.ui.theme.MatrixBackground
+import com.example.devclicker.ui.theme.matrixGreen
 
 @Composable
 fun SignUpScreen(
@@ -35,8 +36,6 @@ fun SignUpScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
-
-    val matrixGreen = Color(0xFF00C853)
 
     Box(modifier = Modifier.fillMaxSize()) {
         MatrixBackground()

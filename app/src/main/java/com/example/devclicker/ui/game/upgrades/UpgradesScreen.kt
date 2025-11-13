@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import com.example.devclicker.ui.theme.matrixGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,8 +23,6 @@ fun UpgradesScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    val matrixGreen = Color(0xFF00C853)
 
     LaunchedEffect(uiState.mensagemErro) {
         uiState.mensagemErro?.let {
@@ -39,7 +38,6 @@ fun UpgradesScreen(
     }
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        // 2. Torne o Scaffold transparente
         containerColor = Color.Transparent
     ) { padding ->
         Column(
@@ -51,7 +49,7 @@ fun UpgradesScreen(
         ) {
 
             Text(
-                text = String.format("Pontos: %d", uiState.jogadorPontos),
+                text = String.format("DevPoints: %d", uiState.jogadorPontos),
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White
             )
