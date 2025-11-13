@@ -29,7 +29,6 @@ fun MainNavGraph(
             val viewModel: SignUpViewModel = hiltViewModel()
             SignUpScreen(navController, viewModel)
         }
-
         composable("game_screen") {
             GameScreen(mainNavController = navController)
         }

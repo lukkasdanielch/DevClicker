@@ -53,5 +53,9 @@ fun SettingsScreen(
         ) {
             Text("Sair (Logout)")
         }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Text("Desenvolvido por Allan, Lucas, Malik e Yago")
     }
 }

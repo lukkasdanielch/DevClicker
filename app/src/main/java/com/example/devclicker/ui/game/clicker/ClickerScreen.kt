@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,11 +24,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController // 1. IMPORTAR
+import androidx.navigation.NavHostController
 import com.example.devclicker.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.layout.ContentScale
 
 data class FloatingTextInfo(
     val id: UUID = UUID.randomUUID(),
@@ -40,10 +45,12 @@ fun ClickerScreen(
     viewModel: ClickerViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
     val floatingTexts = remember { mutableStateListOf<FloatingTextInfo>() }
-
     val consoleListState = rememberLazyListState()
+
+    val scope = rememberCoroutineScope()
+    val scale = remember { Animatable(1.0f) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     LaunchedEffect(uiState.consoleLines.size) {
         if (uiState.consoleLines.isNotEmpty()) {
@@ -73,15 +80,27 @@ fun ClickerScreen(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(150.dp)
-                .clickable {
-                    viewModel.onDevClicked()
-                    floatingTexts.add(FloatingTextInfo(text = "+${uiState.pontosPorClique}"))
-                }
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = {
+                        scope.launch {
+                            scale.animateTo(0.9f, animationSpec = tween(100)) // Diminui
+                            scale.animateTo(1.0f, animationSpec = tween(100)) // Volta
+                        }
+                        viewModel.onDevClicked()
+                        floatingTexts.add(FloatingTextInfo(text = "+${uiState.pontosPorClique}"))
+                    }
+                )
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
-                modifier = Modifier.fillMaxSize()
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .scale(scale.value)
             )
 
             floatingTexts.forEach { textInfo ->
